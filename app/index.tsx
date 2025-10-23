@@ -7,10 +7,10 @@ export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    // Auto-navigate to home after 2 seconds
+    // Auto-navigate to analysis after 2 seconds
     const timer = setTimeout(() => {
-      router.replace('/home');
-    }, 2000);
+      router.replace('/analysis');
+    }, 0);
 
     return () => clearTimeout(timer);
   }, []);
