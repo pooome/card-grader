@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
@@ -11,17 +11,24 @@ interface ZoomableImageProps {
   isLinesDragging?: boolean;
 }
 
+export interface ZoomableImageRef {
+  resetZoom: () => void;
+}
+
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 15;
 
-export default function ZoomableImage({
-  imageUri,
-  imageWidth,
-  imageHeight,
-  onTransformChange,
-  children,
-  isLinesDragging = false,
-}: ZoomableImageProps) {
+const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
+  {
+    imageUri,
+    imageWidth,
+    imageHeight,
+    onTransformChange,
+    children,
+    isLinesDragging = false,
+  },
+  ref
+) => {
   const [scale, setScale] = useState(1);
   const [translateX, setTranslateX] = useState(0);
   const [translateY, setTranslateY] = useState(0);
@@ -29,6 +36,22 @@ export default function ZoomableImage({
   const savedScale = useRef(1);
   const savedTranslateX = useRef(0);
   const savedTranslateY = useRef(0);
+
+  // Expose reset method to parent
+  useImperativeHandle(ref, () => ({
+    resetZoom: () => {
+      setScale(1);
+      setTranslateX(0);
+      setTranslateY(0);
+      savedScale.current = 1;
+      savedTranslateX.current = 0;
+      savedTranslateY.current = 0;
+      
+      if (onTransformChange) {
+        onTransformChange(1, 0, 0);
+      }
+    },
+  }));
 
   const pinchGesture = Gesture.Pinch()
     .enabled(!isLinesDragging)
@@ -94,7 +117,11 @@ export default function ZoomableImage({
       </GestureDetector>
     </View>
   );
-}
+});
+
+ZoomableImage.displayName = 'ZoomableImage';
+
+export default ZoomableImage;
 
 const styles = StyleSheet.create({
   container: {

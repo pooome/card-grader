@@ -1,16 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ZoomControlsProps {
   zoomLevel: number;
+  onReset?: () => void;
 }
 
-export default function ZoomControls({ zoomLevel }: ZoomControlsProps) {
+export default function ZoomControls({ zoomLevel, onReset }: ZoomControlsProps) {
   return (
     <SafeAreaView edges={['bottom', 'left']} style={styles.safeArea}>
-      <View style={styles.container}>
+      <TouchableOpacity 
+        style={styles.container}
+        onPress={onReset}
+        activeOpacity={0.7}
+      >
         <IconButton
           icon="magnify"
           iconColor="#fff"
@@ -18,7 +23,7 @@ export default function ZoomControls({ zoomLevel }: ZoomControlsProps) {
           style={styles.icon}
         />
         <Text style={styles.zoomText}>{zoomLevel.toFixed(2)}x</Text>
-      </View>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

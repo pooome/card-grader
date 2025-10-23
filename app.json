@@ -52,6 +52,13 @@
         {
           "photosPermission": "Allow TCG Card Grader to access your photos to select card images."
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow TCG Card Grader to access your photo library to display recent photos.",
+          "savePhotosPermission": "Allow TCG Card Grader to save graded card images to your library."
+        }
       ]
     ]
   }
