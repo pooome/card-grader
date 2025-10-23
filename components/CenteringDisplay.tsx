@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
     paddingVertical: 4,
     paddingHorizontal: 8,
-    paddingBottom: 6,
   },
   card: {
     backgroundColor: 'rgba(40, 40, 40, 0.95)',

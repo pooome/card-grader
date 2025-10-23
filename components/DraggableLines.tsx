@@ -11,6 +11,7 @@ interface DraggableLinesProps {
   imageHeight: number;
   onBoundariesChange: (boundaries: BorderBoundaries) => void;
   onDraggingChange?: (isDragging: boolean) => void;
+  scale?: number;
 }
 
 type BorderSide = 'top' | 'bottom' | 'left' | 'right';
@@ -23,6 +24,7 @@ export default function DraggableLines({
   imageHeight,
   onBoundariesChange,
   onDraggingChange,
+  scale = 1,
 }: DraggableLinesProps) {
   const [activeHandle, setActiveHandle] = useState<string | null>(null);
   const lastHapticPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -71,15 +73,16 @@ export default function DraggableLines({
         }
       } else {
         // Inner boundaries can only extend up to their respective outer boundary
+        // AND cannot cross over each other
         if (side === 'left') {
           clampedX = Math.max(
             boundaries.outer.left,
-            Math.min(boundaries.outer.right, newX) // Stay within right outer boundary
+            Math.min(boundaries.inner.right - 1, newX) // Cannot go past inner right
           );
         } else {
           clampedX = Math.min(
             boundaries.outer.right,
-            Math.max(boundaries.outer.left, newX) // Stay within left outer boundary
+            Math.max(boundaries.inner.left + 1, newX) // Cannot go past inner left
           );
         }
       }
@@ -106,15 +109,16 @@ export default function DraggableLines({
         }
       } else {
         // Inner boundaries can only extend up to their respective outer boundary
+        // AND cannot cross over each other
         if (side === 'top') {
           clampedY = Math.max(
             boundaries.outer.top,
-            Math.min(boundaries.outer.bottom, newY) // Stay within bottom outer boundary
+            Math.min(boundaries.inner.bottom - 1, newY) // Cannot go past inner bottom
           );
         } else {
           clampedY = Math.min(
             boundaries.outer.bottom,
-            Math.max(boundaries.outer.top, newY) // Stay within top outer boundary
+            Math.max(boundaries.inner.top + 1, newY) // Cannot go past inner top
           );
         }
       }
@@ -157,7 +161,10 @@ export default function DraggableLines({
         }
       },
       onPanResponderMove: (_, gestureState) => {
-        handleDrag(borderType, side, gestureState.dx, gestureState.dy);
+        // Adjust deltas by scale to account for zoomed coordinate system
+        const adjustedDx = gestureState.dx / scale;
+        const adjustedDy = gestureState.dy / scale;
+        handleDrag(borderType, side, adjustedDx, adjustedDy);
       },
       onPanResponderRelease: () => {
         setActiveHandle(null);

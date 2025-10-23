@@ -68,7 +68,7 @@ export default function ZoomableImage({
   const composed = Gesture.Simultaneous(pinchGesture, panGesture);
 
   return (
-    <View style={[styles.container, { width: imageWidth, height: imageHeight }]}>
+    <View style={styles.container}>
       <GestureDetector gesture={composed}>
         <View 
           style={[
@@ -87,7 +87,7 @@ export default function ZoomableImage({
           <Image
             source={{ uri: imageUri }}
             style={{ width: imageWidth, height: imageHeight, margin: 0, padding: 0 }}
-            resizeMode="stretch"
+            resizeMode="contain"
           />
           {children}
         </View>
@@ -98,10 +98,11 @@ export default function ZoomableImage({
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     overflow: 'hidden',
     backgroundColor: '#000',
-    margin: 0,
-    padding: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   imageContainer: {
     margin: 0,

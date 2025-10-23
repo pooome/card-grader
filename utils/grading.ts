@@ -1,8 +1,32 @@
 import { GradingCompany, GradingResult, GradeThreshold } from '../types/grading';
+import { CenteringMeasurements } from '../types/measurements';
 import { GRADING_STANDARDS } from '../constants/gradingStandards';
 
+/**
+ * Calculate the maximum deviation from perfect 50/50 centering
+ * For example: 55/45 = 5% deviation, 70/30 = 20% deviation
+ */
+function calculateCenteringDeviation(
+  centering: { left: number; right: number } | { top: number; bottom: number }
+): number {
+  let larger: number;
+  
+  if ('left' in centering) {
+    larger = Math.max(centering.left, centering.right);
+  } else {
+    larger = Math.max(centering.top, centering.bottom);
+  }
+  
+  // Deviation from perfect 50/50
+  return Math.abs(larger - 50);
+}
+
+/**
+ * Calculate grade based on centering measurements
+ */
 export function calculateGrade(
-  borderWearPercent: number,
+  centering: CenteringMeasurements,
+  side: 'front' | 'back',
   company: GradingCompany = 'PSA'
 ): GradingResult {
   const standard = GRADING_STANDARDS[company];
@@ -11,11 +35,21 @@ export function calculateGrade(
     throw new Error(`Unknown grading company: ${company}`);
   }
 
-  // Find the appropriate grade based on the border wear percentage
+  // Calculate deviations for both horizontal (leftRight) and vertical (topBottom)
+  const leftRightDeviation = calculateCenteringDeviation(centering.leftRight);
+  const topBottomDeviation = calculateCenteringDeviation(centering.topBottom);
+
+  // Determine which threshold to use based on selected side
+  const thresholdKey = side === 'front' ? 'maxCenteringDeviationFront' : 'maxCenteringDeviationBack';
+
+  // Find the appropriate grade based on centering
+  // BOTH leftRight AND topBottom deviations must meet the threshold for the selected side
   let matchedGrade: GradeThreshold = standard.grades[standard.grades.length - 1]; // Default to lowest grade
   
   for (const grade of standard.grades) {
-    if (borderWearPercent <= grade.maxBorderWearPercent) {
+    // Card must meet BOTH horizontal AND vertical centering requirements for the selected side
+    if (leftRightDeviation <= grade[thresholdKey] && 
+        topBottomDeviation <= grade[thresholdKey]) {
       matchedGrade = grade;
       break;
     }
@@ -25,30 +59,46 @@ export function calculateGrade(
     company,
     score: matchedGrade.score,
     gradeName: matchedGrade.name,
-    borderWearPercent,
+    centeringFrontDeviation: leftRightDeviation,
+    centeringBackDeviation: topBottomDeviation,
     timestamp: new Date(),
   };
 }
 
+/**
+ * Calculate grades for all three companies
+ */
 export function calculateAllGrades(
-  borderWearPercent: number
+  centering: CenteringMeasurements,
+  side: 'front' | 'back'
 ): Record<GradingCompany, GradingResult> {
   return {
-    PSA: calculateGrade(borderWearPercent, 'PSA'),
-    BGS: calculateGrade(borderWearPercent, 'BGS'),
-    CGC: calculateGrade(borderWearPercent, 'CGC'),
+    PSA: calculateGrade(centering, side, 'PSA'),
+    BGS: calculateGrade(centering, side, 'BGS'),
+    CGC: calculateGrade(centering, side, 'CGC'),
   };
 }
 
-export function getGradeDescription(score: number, company: GradingCompany = 'PSA'): string {
+/**
+ * Get the full grade threshold details for a specific score and company
+ */
+export function getGradeThreshold(score: number, company: GradingCompany = 'PSA'): GradeThreshold | undefined {
   const standard = GRADING_STANDARDS[company];
-  const grade = standard.grades.find(g => g.score === score);
+  return standard.grades.find(g => g.score === score && (g.isPristine === undefined || !g.isPristine));
+}
+
+/**
+ * Get grade description
+ */
+export function getGradeDescription(score: number, company: GradingCompany = 'PSA'): string {
+  const grade = getGradeThreshold(score, company);
   return grade?.description || 'Unknown grade';
 }
 
+/**
+ * Get grade name
+ */
 export function getGradeName(score: number, company: GradingCompany = 'PSA'): string {
-  const standard = GRADING_STANDARDS[company];
-  const grade = standard.grades.find(g => g.score === score);
+  const grade = getGradeThreshold(score, company);
   return grade?.name || 'Unknown';
 }
-

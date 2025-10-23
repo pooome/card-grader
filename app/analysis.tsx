@@ -12,17 +12,22 @@ import CenteringDisplay from '../components/CenteringDisplay';
 import AnalysisHeader from '../components/AnalysisHeader';
 import ZoomableImage from '../components/ZoomableImage';
 import ZoomControls from '../components/ZoomControls';
+import CardSideToggle from '../components/CardSideToggle';
 import { BorderBoundaries, CardDimensions, CenteringMeasurements } from '../types/measurements';
 import { GradingResult } from '../types/grading';
 import { estimateCardDimensions } from '../utils/imageProcessing';
-import { initializeBorderBoundaries, calculateBorderWear } from '../utils/cornerCalculations';
+import { initializeBorderBoundaries } from '../utils/cornerCalculations';
 import { calculateAllGrades } from '../utils/grading';
 import { calculateCentering } from '../utils/centeringCalculations';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const IMAGE_WIDTH = screenWidth;
-// Reserve space for score display (~66px) and instructions (~30px) = ~96px
-const AVAILABLE_IMAGE_HEIGHT = screenHeight - 96;
+
+// Estimate space taken by UI elements
+const HEADER_HEIGHT = 90; // SafeAreaView top + AnalysisHeader
+const GRADES_HEIGHT = 60; // MultiCompanyGrades
+const CENTERING_HEIGHT = 50; // CenteringDisplay
+const ZOOM_CONTROLS_HEIGHT = 80; // ZoomControls + SafeAreaView bottom
+const AVAILABLE_IMAGE_HEIGHT = screenHeight - HEADER_HEIGHT - GRADES_HEIGHT - CENTERING_HEIGHT - ZOOM_CONTROLS_HEIGHT;
 
 // Shimmer Button Component
 function ShimmerButton({ children, onPress, icon }: { children: string; onPress: () => void; icon: string }) {
@@ -84,14 +89,17 @@ export default function AnalysisScreen() {
   const [centering, setCentering] = useState<CenteringMeasurements | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isLinesDragging, setIsLinesDragging] = useState(false);
+  const [cardSide, setCardSide] = useState<'front' | 'back'>('front');
 
   useEffect(() => {
     if (imageUri) {
       // Get image dimensions
       Image.getSize(imageUri, (width, height) => {
         const aspectRatio = height / width;
-        let displayHeight = IMAGE_WIDTH * aspectRatio;
-        let displayWidth = IMAGE_WIDTH;
+        
+        // Calculate dimensions to fit within available space
+        let displayWidth = screenWidth;
+        let displayHeight = displayWidth * aspectRatio;
         
         // If image is too tall, constrain by height instead
         if (displayHeight > AVAILABLE_IMAGE_HEIGHT) {
@@ -119,13 +127,21 @@ export default function AnalysisScreen() {
     currentBoundaries: BorderBoundaries,
     currentDimensions: CardDimensions
   ) => {
-    const borderWearPercent = calculateBorderWear(currentBoundaries, currentDimensions);
-    const allResults = calculateAllGrades(borderWearPercent);
-    setGradingResults(allResults);
-    
+    // Calculate centering data
     const centeringData = calculateCentering(currentBoundaries, currentDimensions);
     setCentering(centeringData);
+    
+    // Calculate grades based on centering and selected card side
+    const allResults = calculateAllGrades(centeringData, cardSide);
+    setGradingResults(allResults);
   };
+
+  // Recalculate grades when card side changes
+  useEffect(() => {
+    if (boundaries && cardDimensions) {
+      calculateAndSetGrades(boundaries, cardDimensions);
+    }
+  }, [cardSide]);
 
   const handleBoundariesChange = (newBoundaries: BorderBoundaries) => {
     setBoundaries(newBoundaries);
@@ -286,6 +302,7 @@ export default function AnalysisScreen() {
             psaResult={gradingResults.PSA}
             bgsResult={gradingResults.BGS}
             cgcResult={gradingResults.CGC}
+            cardSide={cardSide}
           />
 
           {/* Centering Display */}
@@ -307,14 +324,19 @@ export default function AnalysisScreen() {
                 imageHeight={imageSize.height}
                 onBoundariesChange={handleBoundariesChange}
                 onDraggingChange={setIsLinesDragging}
+                scale={zoomLevel}
               />
             </ZoomableImage>
           </View>
 
           {/* Zoom Level Indicator */}
-          <SafeAreaView edges={['bottom']} style={styles.zoomControlsContainer}>
-            <ZoomControls zoomLevel={zoomLevel} />
-          </SafeAreaView>
+          <ZoomControls zoomLevel={zoomLevel} />
+          
+          {/* Card Side Toggle */}
+          <CardSideToggle 
+            cardSide={cardSide}
+            onToggle={() => setCardSide(cardSide === 'front' ? 'back' : 'front')}
+          />
         </>
       )}
     </View>
@@ -400,11 +422,9 @@ const styles = StyleSheet.create({
   imageWrapper: {
     flex: 1,
     backgroundColor: '#000',
-    margin: 0,
-    padding: 0,
-  },
-  zoomControlsContainer: {
-    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
 });
 
