@@ -145,7 +145,11 @@ export default function AnalysisScreen() {
         setCardDimensions(estimatedDimensions);
         
         // Initialize border boundaries
-        const initialBoundaries = initializeBorderBoundaries(estimatedDimensions);
+        const initialBoundaries = initializeBorderBoundaries(
+          estimatedDimensions,
+          displayWidth,
+          displayHeight
+        );
         setBoundaries(initialBoundaries);
         
         // Calculate initial grades and centering

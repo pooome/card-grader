@@ -6,22 +6,30 @@ import { BorderBoundaries, CardDimensions } from '../types/measurements';
  */
 export function initializeBorderBoundaries(
   cardDimensions: CardDimensions,
+  imageWidth: number,
+  imageHeight: number,
   outerBorderOffset: number = 30,
   innerBorderOffset: number = 20
 ): BorderBoundaries {
+  // Calculate outer boundaries constrained to image dimensions
+  const outer = {
+    top: Math.max(0, cardDimensions.topEdge - outerBorderOffset),
+    bottom: Math.min(imageHeight, cardDimensions.bottomEdge + outerBorderOffset),
+    left: Math.max(0, cardDimensions.leftEdge - outerBorderOffset),
+    right: Math.min(imageWidth, cardDimensions.rightEdge + outerBorderOffset),
+  };
+
+  // Calculate inner boundaries constrained to both image dimensions and outer boundaries
+  const inner = {
+    top: Math.max(outer.top + 1, Math.min(cardDimensions.topEdge + innerBorderOffset, imageHeight - 1)),
+    bottom: Math.min(outer.bottom - 1, Math.max(cardDimensions.bottomEdge - innerBorderOffset, 1)),
+    left: Math.max(outer.left + 1, Math.min(cardDimensions.leftEdge + innerBorderOffset, imageWidth - 1)),
+    right: Math.min(outer.right - 1, Math.max(cardDimensions.rightEdge + innerBorderOffset, 1)),
+  };
+
   return {
-    outer: {
-      top: cardDimensions.topEdge - outerBorderOffset,
-      bottom: cardDimensions.bottomEdge + outerBorderOffset,
-      left: cardDimensions.leftEdge - outerBorderOffset,
-      right: cardDimensions.rightEdge + outerBorderOffset,
-    },
-    inner: {
-      top: cardDimensions.topEdge + innerBorderOffset,
-      bottom: cardDimensions.bottomEdge - innerBorderOffset,
-      left: cardDimensions.leftEdge + innerBorderOffset,
-      right: cardDimensions.rightEdge + innerBorderOffset,
-    },
+    outer,
+    inner,
   };
 }
 

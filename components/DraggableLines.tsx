@@ -141,8 +141,10 @@ export default function DraggableLines({
     const isActive = activeHandle === id;
     const color = '#A020F0';
     const notchWidth = 40;
-    const notchLength = 20;
+    const notchLength = 10;
     const cornerRadius = 8;
+    // Minimum touch target size (48x48 for Android, 44x44 for iOS - using 48 for safety)
+    const minTouchSize = 48;
 
     const panResponder = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -247,15 +249,44 @@ export default function DraggableLines({
         break;
     }
 
+    // Calculate touch area position (centered on notch)
+    let touchAreaX = x - minTouchSize / 2;
+    let touchAreaY = y - minTouchSize / 2;
+    
+    // Adjust touch area position based on direction to keep it centered on the notch
+    switch (direction) {
+      case 'up':
+        touchAreaY = y - notchLength - (minTouchSize - notchLength) / 2;
+        break;
+      case 'down':
+        touchAreaY = y - (minTouchSize - notchLength) / 2;
+        break;
+      case 'left':
+        touchAreaX = x - notchLength - (minTouchSize - notchLength) / 2;
+        break;
+      case 'right':
+        touchAreaX = x - (minTouchSize - notchLength) / 2;
+        break;
+    }
+
     return (
       <G key={id}>
+        {/* Invisible expanded touch area */}
+        <Rect
+          x={touchAreaX}
+          y={touchAreaY}
+          width={minTouchSize}
+          height={minTouchSize}
+          fill="transparent"
+          {...panResponder.panHandlers}
+        />
+        {/* Visible notch (no handlers, purely visual) */}
         <Path
           d={pathData}
           fill={color}
           opacity={isActive ? 0.9 : 0.4}
           stroke={color}
           strokeWidth={isActive ? 1.5 : 0.5}
-          {...panResponder.panHandlers}
         />
       </G>
     );
@@ -345,7 +376,7 @@ export default function DraggableLines({
           x2={outer.right}
           y2={outer.top}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={1}
           opacity={0.9}
         />
         <Line
@@ -354,7 +385,7 @@ export default function DraggableLines({
           x2={outer.right}
           y2={outer.bottom}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={1}
           opacity={0.9}
         />
         <Line
@@ -363,7 +394,7 @@ export default function DraggableLines({
           x2={outer.left}
           y2={outer.bottom}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={1}
           opacity={0.9}
         />
         <Line
@@ -372,7 +403,7 @@ export default function DraggableLines({
           x2={outer.right}
           y2={outer.bottom}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={1}
           opacity={0.9}
         />
 

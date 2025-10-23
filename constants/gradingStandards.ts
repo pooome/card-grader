@@ -145,7 +145,7 @@ export const BGS_STANDARD: GradingStandard = {
     {
       score: 10,
       name: 'Pristine',
-      maxCenteringDeviationFront: 0,   // 50/50 perfect
+      maxCenteringDeviationFront: 1,   // 50/50 perfect
       maxCenteringDeviationBack: 10,   // 60/40 or better
       description: 'The best of the best - museum quality',
       isPristine: true,
