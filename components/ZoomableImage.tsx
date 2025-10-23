@@ -91,8 +91,8 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
   const composed = Gesture.Simultaneous(pinchGesture, panGesture);
 
   return (
-    <View style={styles.container}>
-      <GestureDetector gesture={composed}>
+    <GestureDetector gesture={composed}>
+      <View style={styles.container}>
         <View 
           style={[
             styles.imageContainer, 
@@ -114,8 +114,8 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
           />
           {children}
         </View>
-      </GestureDetector>
-    </View>
+      </View>
+    </GestureDetector>
   );
 });
 
