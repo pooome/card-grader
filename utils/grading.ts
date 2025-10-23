@@ -1,8 +1,8 @@
-import { GradingCompany, GradingResult, GradeThreshold, CornerWearPercentages } from '../types/grading';
+import { GradingCompany, GradingResult, GradeThreshold } from '../types/grading';
 import { GRADING_STANDARDS } from '../constants/gradingStandards';
 
 export function calculateGrade(
-  cornerWearPercentages: CornerWearPercentages,
+  borderWearPercent: number,
   company: GradingCompany = 'PSA'
 ): GradingResult {
   const standard = GRADING_STANDARDS[company];
@@ -11,13 +11,11 @@ export function calculateGrade(
     throw new Error(`Unknown grading company: ${company}`);
   }
 
-  // Find the appropriate grade based on the maximum corner wear
-  const maxWear = cornerWearPercentages.maxWear;
-  
+  // Find the appropriate grade based on the border wear percentage
   let matchedGrade: GradeThreshold = standard.grades[standard.grades.length - 1]; // Default to lowest grade
   
   for (const grade of standard.grades) {
-    if (maxWear <= grade.maxCornerWearPercent) {
+    if (borderWearPercent <= grade.maxBorderWearPercent) {
       matchedGrade = grade;
       break;
     }
@@ -27,8 +25,18 @@ export function calculateGrade(
     company,
     score: matchedGrade.score,
     gradeName: matchedGrade.name,
-    cornerWearPercentages,
+    borderWearPercent,
     timestamp: new Date(),
+  };
+}
+
+export function calculateAllGrades(
+  borderWearPercent: number
+): Record<GradingCompany, GradingResult> {
+  return {
+    PSA: calculateGrade(borderWearPercent, 'PSA'),
+    BGS: calculateGrade(borderWearPercent, 'BGS'),
+    CGC: calculateGrade(borderWearPercent, 'CGC'),
   };
 }
 

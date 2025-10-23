@@ -18,7 +18,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs camera access to photograph TCG cards for grading.",
         "NSPhotoLibraryUsageDescription": "This app needs photo library access to select card images for grading."
-      }
+      },
+      "bundleIdentifier": "com.bpthav.auto-grader"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,9 +29,11 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {

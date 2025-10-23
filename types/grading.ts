@@ -8,7 +8,7 @@ export interface GradingStandard {
 export interface GradeThreshold {
   score: number;
   name: string;
-  maxCornerWearPercent: number;
+  maxBorderWearPercent: number;
   description: string;
 }
 
@@ -16,15 +16,7 @@ export interface GradingResult {
   company: GradingCompany;
   score: number;
   gradeName: string;
-  cornerWearPercentages: CornerWearPercentages;
+  borderWearPercent: number;
   timestamp: Date;
-}
-
-export interface CornerWearPercentages {
-  topLeft: number;
-  topRight: number;
-  bottomLeft: number;
-  bottomRight: number;
-  maxWear: number;
 }
 

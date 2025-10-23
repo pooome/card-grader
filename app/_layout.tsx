@@ -42,7 +42,7 @@ export default function RootLayout() {
             name="analysis"
             options={{
               title: 'Card Analysis',
-              headerShown: true,
+              headerShown: false,
             }}
           />
         </Stack>
