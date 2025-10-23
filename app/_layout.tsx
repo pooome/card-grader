@@ -1,13 +1,15 @@
 import { Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <PaperProvider>
-        <Stack
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={styles.container}>
+        <PaperProvider>
+          <Stack
           screenOptions={{
             headerStyle: {
               backgroundColor: '#1e88e5',
@@ -34,8 +36,11 @@ export default function RootLayout() {
           <Stack.Screen
             name="camera"
             options={{
-              title: 'Take Photo',
+              title: '',
               headerShown: true,
+              headerStyle: {
+                backgroundColor: '#000',
+              },
             }}
           />
           <Stack.Screen
@@ -45,9 +50,10 @@ export default function RootLayout() {
               headerShown: false,
             }}
           />
-        </Stack>
-      </PaperProvider>
-    </GestureHandlerRootView>
+          </Stack>
+        </PaperProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 

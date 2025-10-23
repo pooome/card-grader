@@ -4,7 +4,6 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Button } from 'react-native-paper';
 import CameraOverlay from '../components/CameraOverlay';
-import LevelIndicator from '../components/LevelIndicator';
 
 export default function CameraScreen() {
   const [facing] = useState<CameraType>('back');
@@ -77,8 +76,7 @@ export default function CameraScreen() {
   return (
     <View style={styles.container}>
       <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-        <CameraOverlay cardDetected={cardDetected} isLevel={isLevel} />
-        <LevelIndicator onLevelChange={handleLevelChange} />
+        <CameraOverlay cardDetected={cardDetected} onLevelChange={handleLevelChange} />
         
         <View style={styles.controlsContainer}>
           <View style={styles.spacer} />
