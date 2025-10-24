@@ -49,9 +49,10 @@ const LEVEL_THRESHOLD_YELLOW = 8; // Getting close
 interface CameraOverlayProps {
   cardDetected?: boolean;
   onLevelChange?: (isLevel: boolean) => void;
+  showLevelIndicators?: boolean;
 }
 
-export default function CameraOverlay({ cardDetected = false, onLevelChange }: CameraOverlayProps) {
+export default function CameraOverlay({ cardDetected = false, onLevelChange, showLevelIndicators = true }: CameraOverlayProps) {
   const [tiltX, setTiltX] = useState(0); // Roll (side to side)
   const [tiltY, setTiltY] = useState(0); // Pitch (front to back)
   const [isLevel, setIsLevel] = useState(false);
@@ -161,38 +162,42 @@ export default function CameraOverlay({ cardDetected = false, onLevelChange }: C
       </Svg>
 
       {/* Y-axis (Pitch) - Vertical indicator centered vertically */}
-      <View style={[styles.yAxisContainer, { left: guideLeft - INDICATOR_TRACK_THICKNESS - INDICATOR_SPACING }]}>
-        <Text style={styles.label}>Y</Text>
-        <View style={styles.verticalTrack}>
-          <View
-            style={[
-              styles.verticalIndicator,
-              {
-                backgroundColor: colorY,
-                transform: [{ translateY: clampedY }],
-              },
-            ]}
-          />
-          <View style={[styles.centerLine, { width: INDICATOR_SIZE, height: INDICATOR_CENTER_LINE_THICKNESS }]} />
+      {showLevelIndicators && (
+        <View style={[styles.yAxisContainer, { left: guideLeft - INDICATOR_TRACK_THICKNESS - INDICATOR_SPACING }]}>
+          <Text style={styles.label}>Y</Text>
+          <View style={styles.verticalTrack}>
+            <View
+              style={[
+                styles.verticalIndicator,
+                {
+                  backgroundColor: colorY,
+                  transform: [{ translateY: clampedY }],
+                },
+              ]}
+            />
+            <View style={[styles.centerLine, { width: INDICATOR_SIZE, height: INDICATOR_CENTER_LINE_THICKNESS }]} />
+          </View>
         </View>
-      </View>
+      )}
 
       {/* X-axis (Roll) - Horizontal indicator centered horizontally */}
-      <View style={[styles.xAxisContainer, { top: guideTop - INDICATOR_TRACK_SIZE - INDICATOR_LABEL_HEIGHT - INDICATOR_SPACING }]}>
-        <Text style={styles.label}>X</Text>
-        <View style={styles.horizontalTrack}>
-          <View
-            style={[
-              styles.horizontalIndicator,
-              {
-                backgroundColor: colorX,
-                transform: [{ translateX: clampedX }],
-              },
-            ]}
-          />
-          <View style={[styles.centerLine, { width: INDICATOR_CENTER_LINE_THICKNESS, height: INDICATOR_SIZE }]} />
+      {showLevelIndicators && (
+        <View style={[styles.xAxisContainer, { top: guideTop - INDICATOR_TRACK_SIZE - INDICATOR_LABEL_HEIGHT - INDICATOR_SPACING }]}>
+          <Text style={styles.label}>X</Text>
+          <View style={styles.horizontalTrack}>
+            <View
+              style={[
+                styles.horizontalIndicator,
+                {
+                  backgroundColor: colorX,
+                  transform: [{ translateX: clampedX }],
+                },
+              ]}
+            />
+            <View style={[styles.centerLine, { width: INDICATOR_CENTER_LINE_THICKNESS, height: INDICATOR_SIZE }]} />
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }

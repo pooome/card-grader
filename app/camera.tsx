@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { Button } from 'react-native-paper';
+import { Button, IconButton } from 'react-native-paper';
 import CameraOverlay from '../components/CameraOverlay';
 
 export default function CameraScreen() {
@@ -10,6 +10,7 @@ export default function CameraScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isLevel, setIsLevel] = useState(false);
   const [cardDetected, setCardDetected] = useState(false);
+  const [showLevelIndicators, setShowLevelIndicators] = useState(true);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
 
@@ -69,17 +70,29 @@ export default function CameraScreen() {
     setCardDetected(false); // Currently always false until ML is implemented
   };
 
-  // Capture button is enabled only when device is level
+  // Capture button is enabled only when device is level (if indicators are shown)
   // In future, also require cardDetected to be true
-  const canCapture = isLevel; // && cardDetected when card detection is implemented
+  const canCapture = showLevelIndicators ? isLevel : true; // && cardDetected when card detection is implemented
 
   return (
     <View style={styles.container}>
       <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-        <CameraOverlay cardDetected={cardDetected} onLevelChange={handleLevelChange} />
+        <CameraOverlay 
+          cardDetected={cardDetected} 
+          onLevelChange={handleLevelChange} 
+          showLevelIndicators={showLevelIndicators}
+        />
         
         <View style={styles.controlsContainer}>
-          <View style={styles.spacer} />
+          <View style={styles.levelToggleButton}>
+            <IconButton
+              icon="spirit-level"
+              iconColor={showLevelIndicators ? "#4caf50" : "#fff"}
+              size={32}
+              onPress={() => setShowLevelIndicators(!showLevelIndicators)}
+              style={{ margin: 0 }}
+            />
+          </View>
 
           <TouchableOpacity
             style={[
@@ -101,9 +114,9 @@ export default function CameraScreen() {
         <View style={styles.instructionContainer}>
           <View style={styles.instructionBubble}>
             <Text style={styles.instructionText}>
-              {!isLevel && '📱 Hold phone flat and level'}
-              {isLevel && !cardDetected && '🃏 Position card in frame'}
-              {isLevel && cardDetected && '✓ Ready to capture!'}
+              {showLevelIndicators && !isLevel && 'Hold phone flat and level'}
+              {(!showLevelIndicators || isLevel) && !cardDetected && 'Position card in frame'}
+              {(!showLevelIndicators || isLevel) && cardDetected && 'Ready to capture!'}
             </Text>
           </View>
         </View>
@@ -143,6 +156,16 @@ const styles = StyleSheet.create({
   },
   spacer: {
     width: 60,
+  },
+  levelToggleButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   captureButton: {
     width: 80,
