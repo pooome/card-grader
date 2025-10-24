@@ -128,14 +128,13 @@ export default function AnalysisScreen() {
       Image.getSize(imageUri, (width, height) => {
         const aspectRatio = height / width;
         
-        // Calculate dimensions to fit within available space
-        let displayWidth = screenWidth;
+        // Always use full screen width
+        const displayWidth = screenWidth;
         let displayHeight = displayWidth * aspectRatio;
         
-        // If image is too tall, constrain by height instead
+        // If image is too tall, crop it to fit (we'll use cover mode for this)
         if (displayHeight > AVAILABLE_IMAGE_HEIGHT) {
           displayHeight = AVAILABLE_IMAGE_HEIGHT;
-          displayWidth = displayHeight / aspectRatio;
         }
         
         setImageSize({ width: displayWidth, height: displayHeight });

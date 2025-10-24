@@ -40,7 +40,7 @@ export default function CameraScreen() {
     if (cameraRef.current) {
       try {
         const photo = await cameraRef.current.takePictureAsync({
-          quality: 1,
+          quality: 1, //TODO: premium feature allow for higher quality
         });
         
         if (photo) {

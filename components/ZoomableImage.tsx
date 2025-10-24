@@ -110,7 +110,7 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
           <Image
             source={{ uri: imageUri }}
             style={{ width: imageWidth, height: imageHeight, margin: 0, padding: 0 }}
-            resizeMode="contain"
+            resizeMode="cover"
           />
           {children}
         </View>

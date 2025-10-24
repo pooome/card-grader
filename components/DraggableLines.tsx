@@ -307,7 +307,7 @@ export default function DraggableLines({
             <Path
               d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2"
               stroke="#A020F0"
-              strokeWidth="2"
+              strokeWidth="1"
             />
           </Pattern>
         </Defs>
@@ -376,7 +376,7 @@ export default function DraggableLines({
           x2={outer.right}
           y2={outer.top}
           stroke="#A020F0"
-          strokeWidth={1}
+          strokeWidth={0.5}
           opacity={0.9}
         />
         <Line
@@ -385,7 +385,7 @@ export default function DraggableLines({
           x2={outer.right}
           y2={outer.bottom}
           stroke="#A020F0"
-          strokeWidth={1}
+          strokeWidth={0.5}
           opacity={0.9}
         />
         <Line
@@ -394,7 +394,7 @@ export default function DraggableLines({
           x2={outer.left}
           y2={outer.bottom}
           stroke="#A020F0"
-          strokeWidth={1}
+          strokeWidth={0.5}
           opacity={0.9}
         />
         <Line
@@ -403,7 +403,7 @@ export default function DraggableLines({
           x2={outer.right}
           y2={outer.bottom}
           stroke="#A020F0"
-          strokeWidth={1}
+          strokeWidth={0.5}
           opacity={0.9}
         />
 
@@ -414,7 +414,7 @@ export default function DraggableLines({
           x2={inner.right}
           y2={inner.top}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={0.5}
           opacity={0.9}
         />
         <Line
@@ -423,7 +423,7 @@ export default function DraggableLines({
           x2={inner.right}
           y2={inner.bottom}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={0.5}
           opacity={0.9}
         />
         <Line
@@ -432,7 +432,7 @@ export default function DraggableLines({
           x2={inner.left}
           y2={inner.bottom}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={0.5}
           opacity={0.9}
         />
         <Line
@@ -441,7 +441,7 @@ export default function DraggableLines({
           x2={inner.right}
           y2={inner.bottom}
           stroke="#A020F0"
-          strokeWidth={1.5}
+          strokeWidth={0.5}
           opacity={0.9}
         />
 
