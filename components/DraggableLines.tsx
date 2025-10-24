@@ -280,13 +280,14 @@ export default function DraggableLines({
           fill="transparent"
           {...panResponder.panHandlers}
         />
-        {/* Visible notch (no handlers, purely visual) */}
+        {/* Visible notch (no handlers, purely visual - pointer events disabled to allow touch area to receive events) */}
         <Path
           d={pathData}
           fill={color}
           opacity={isActive ? 0.9 : 0.4}
           stroke={color}
           strokeWidth={isActive ? 1.5 : 0.5}
+          pointerEvents="none"
         />
       </G>
     );
