@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
-import Svg, { Rect, Line } from 'react-native-svg';
+import Svg, { Rect, Line, Polygon, Circle } from 'react-native-svg';
 import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors';
+import { CardCorners } from '../utils/cardDetectionProcessor';
 
 const { width, height } = Dimensions.get('window');
 
@@ -48,11 +49,17 @@ const LEVEL_THRESHOLD_YELLOW = 8; // Getting close
 
 interface CameraOverlayProps {
   cardDetected?: boolean;
+  detectedCardCorners?: CardCorners | null;
   onLevelChange?: (isLevel: boolean) => void;
   showLevelIndicators?: boolean;
 }
 
-export default function CameraOverlay({ cardDetected = false, onLevelChange, showLevelIndicators = true }: CameraOverlayProps) {
+export default function CameraOverlay({ 
+  cardDetected = false, 
+  detectedCardCorners = null,
+  onLevelChange, 
+  showLevelIndicators = true 
+}: CameraOverlayProps) {
   const [tiltX, setTiltX] = useState(0); // Roll (side to side)
   const [tiltY, setTiltY] = useState(0); // Pitch (front to back)
   const [isLevel, setIsLevel] = useState(false);
@@ -139,6 +146,44 @@ export default function CameraOverlay({ cardDetected = false, onLevelChange, sho
           strokeDasharray={GUIDE_DASH_ARRAY}
           opacity={GUIDE_OPACITY}
         />
+
+        {/* Detected card outline - bright cyan/green when card is detected */}
+        {detectedCardCorners && (
+          <>
+            <Polygon
+              points={`${detectedCardCorners.topLeft.x * width},${detectedCardCorners.topLeft.y * height} ${detectedCardCorners.topRight.x * width},${detectedCardCorners.topRight.y * height} ${detectedCardCorners.bottomRight.x * width},${detectedCardCorners.bottomRight.y * height} ${detectedCardCorners.bottomLeft.x * width},${detectedCardCorners.bottomLeft.y * height}`}
+              fill="rgba(0, 255, 200, 0.1)"
+              stroke="#00ffc8"
+              strokeWidth={3}
+              opacity={0.9}
+            />
+            {/* Corner markers */}
+            <Circle
+              cx={detectedCardCorners.topLeft.x * width}
+              cy={detectedCardCorners.topLeft.y * height}
+              r={5}
+              fill="#00ffc8"
+            />
+            <Circle
+              cx={detectedCardCorners.topRight.x * width}
+              cy={detectedCardCorners.topRight.y * height}
+              r={5}
+              fill="#00ffc8"
+            />
+            <Circle
+              cx={detectedCardCorners.bottomRight.x * width}
+              cy={detectedCardCorners.bottomRight.y * height}
+              r={5}
+              fill="#00ffc8"
+            />
+            <Circle
+              cx={detectedCardCorners.bottomLeft.x * width}
+              cy={detectedCardCorners.bottomLeft.y * height}
+              r={5}
+              fill="#00ffc8"
+            />
+          </>
+        )}
 
         {/* Center crosshairs */}
         <Line

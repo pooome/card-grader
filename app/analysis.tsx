@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Alert, Image, StatusBar, Text, Animated, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, Dimensions, Alert, Image, StatusBar, Text, Animated, ScrollView, TouchableOpacity, Platform, Modal } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from 'react-native-paper';
+import { Button, Switch, Portal, Dialog } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import Svg, { Rect, Line } from 'react-native-svg';
@@ -20,6 +20,9 @@ import { estimateCardDimensions } from '../utils/imageProcessing';
 import { initializeBorderBoundaries } from '../utils/cornerCalculations';
 import { calculateAllGrades } from '../utils/grading';
 import { calculateCentering } from '../utils/centeringCalculations';
+import { CardCorners } from '../utils/cardDetectionProcessor';
+import { cornersToInitialBoundaries } from '../utils/cornerToBoundaries';
+import { useSettings } from '../utils/settings';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -83,6 +86,11 @@ export default function AnalysisScreen() {
   const params = useLocalSearchParams();
   const zoomableImageRef = useRef<ZoomableImageRef>(null);
   const [imageUri, setImageUri] = useState<string | undefined>(params.imageUri as string | undefined);
+  
+  // Parse detected card corners from route params
+  const detectedCorners = params.detectedCardCorners 
+    ? (JSON.parse(params.detectedCardCorners as string) as CardCorners)
+    : null;
 
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [cardDimensions, setCardDimensions] = useState<CardDimensions | null>(null);
@@ -93,6 +101,10 @@ export default function AnalysisScreen() {
   const [isLinesDragging, setIsLinesDragging] = useState(false);
   const [cardSide, setCardSide] = useState<'front' | 'back'>('front');
   const [recentPhotos, setRecentPhotos] = useState<MediaLibrary.AssetInfo[]>([]);
+  
+  // Settings
+  const { settings, updateSettings } = useSettings();
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   // Load recent photos for empty state gallery
   useEffect(() => {
@@ -139,23 +151,35 @@ export default function AnalysisScreen() {
         
         setImageSize({ width: displayWidth, height: displayHeight });
         
-        // Estimate card dimensions
-        const estimatedDimensions = estimateCardDimensions(displayWidth, displayHeight);
-        setCardDimensions(estimatedDimensions);
+        // Check if we have detected corners from the camera
+        let initialBoundaries: BorderBoundaries;
+        let initialDimensions: CardDimensions;
         
-        // Initialize border boundaries
-        const initialBoundaries = initializeBorderBoundaries(
-          estimatedDimensions,
-          displayWidth,
-          displayHeight
-        );
+        if (detectedCorners) {
+          // Use detected corners to initialize boundaries
+          console.log('Using detected corners for initial boundaries');
+          const result = cornersToInitialBoundaries(detectedCorners, displayWidth, displayHeight);
+          initialBoundaries = result.boundaries;
+          initialDimensions = result.dimensions;
+        } else {
+          // Fall back to estimation
+          console.log('No detected corners, using estimation');
+          initialDimensions = estimateCardDimensions(displayWidth, displayHeight);
+          initialBoundaries = initializeBorderBoundaries(
+            initialDimensions,
+            displayWidth,
+            displayHeight
+          );
+        }
+        
+        setCardDimensions(initialDimensions);
         setBoundaries(initialBoundaries);
         
         // Calculate initial grades and centering
-        calculateAndSetGrades(initialBoundaries, estimatedDimensions);
+        calculateAndSetGrades(initialBoundaries, initialDimensions);
       });
     }
-  }, [imageUri]);
+  }, [imageUri, detectedCorners]);
 
   const calculateAndSetGrades = (
     currentBoundaries: BorderBoundaries,
@@ -224,7 +248,11 @@ export default function AnalysisScreen() {
   };
 
   const handleMenu = () => {
-    Alert.alert('Menu', 'Additional options');
+    setShowSettingsDialog(true);
+  };
+
+  const handleToggleVisionMode = async () => {
+    await updateSettings({ visionModeEnabled: !settings.visionModeEnabled });
   };
 
   const handleZoomReset = () => {
@@ -410,6 +438,40 @@ export default function AnalysisScreen() {
           />
         </>
       )}
+
+      {/* Settings Dialog */}
+      <Portal>
+        <Dialog 
+          visible={showSettingsDialog} 
+          onDismiss={() => setShowSettingsDialog(false)}
+          style={styles.settingsDialog}
+        >
+          <Dialog.Title style={styles.dialogTitle}>Settings</Dialog.Title>
+          <Dialog.Content>
+            <View style={styles.settingRow}>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingLabel}>Vision Mode</Text>
+                <Text style={styles.settingDescription}>
+                  Enable AI-powered card detection with OpenCV
+                </Text>
+                <Text style={styles.settingNote}>
+                  {settings.visionModeEnabled 
+                    ? 'Requires native build (npx expo run:ios/android)' 
+                    : 'Classic mode works in Expo Go'}
+                </Text>
+              </View>
+              <Switch
+                value={settings.visionModeEnabled}
+                onValueChange={handleToggleVisionMode}
+                color="#4caf50"
+              />
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowSettingsDialog(false)}>Close</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
@@ -536,6 +598,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+  },
+  settingsDialog: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+  },
+  dialogTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+  },
+  settingInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  settingLabel: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  settingDescription: {
+    color: '#aaa',
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 4,
+  },
+  settingNote: {
+    color: '#888',
+    fontSize: 11,
+    fontStyle: 'italic',
   },
 });
 
