@@ -4,6 +4,7 @@ import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 
 import { useRouter } from 'expo-router';
 import { Button, IconButton } from 'react-native-paper';
 import { useSharedValue, runOnJS } from 'react-native-reanimated';
+import { useResizePlugin } from 'vision-camera-resize-plugin';
 import CameraOverlay from '../components/CameraOverlay';
 import { detectCard, CornerSmoother, type CardCorners } from '../utils/cardDetectionProcessor';
 
@@ -17,41 +18,52 @@ export default function CameraScreen() {
   const cameraRef = useRef<Camera>(null);
   const router = useRouter();
   const cornerSmootherRef = useRef(new CornerSmoother());
-  
+  const { resize } = useResizePlugin();
+
   // Frame counter for throttling detection
   const frameCount = useSharedValue(0);
   const DETECTION_INTERVAL = 5; // Run detection every 5 frames
 
+  // Confidence thresholds to reduce flicker
+  const consecutiveDetections = useSharedValue(0);
+  const consecutiveMisses = useSharedValue(0);
+  const DETECTION_THRESHOLD = 3; // Show overlay after 3 consecutive detections
+  const MISS_THRESHOLD = 5; // Hide overlay after 5 consecutive misses
+
   // Callback to update card detection state from the frame processor
-  const updateCardDetection = useCallback((corners: CardCorners | null) => {
+  const updateCardDetection = useCallback((corners: CardCorners | null, detections: number, misses: number) => {
     if (corners) {
       const smoothed = cornerSmootherRef.current.addCorners(corners);
-      setDetectedCardCorners(smoothed);
-      setCardDetected(!!smoothed);
+
+      // Only show overlay after sufficient consecutive detections
+      if (detections >= DETECTION_THRESHOLD) {
+        setDetectedCardCorners(smoothed);
+        setCardDetected(!!smoothed);
+      }
     } else {
-      cornerSmootherRef.current.reset();
-      setDetectedCardCorners(null);
-      setCardDetected(false);
+      // Only hide overlay after sufficient consecutive misses
+      if (misses >= MISS_THRESHOLD) {
+        cornerSmootherRef.current.reset();
+        setDetectedCardCorners(null);
+        setCardDetected(false);
+      }
     }
   }, []);
 
   // Frame processor for real-time card detection
+  // TODO: Implement card detection once OpenCV is accessible in worklet context
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
-    
+
     // Throttle detection to every Nth frame
     frameCount.value++;
     if (frameCount.value % DETECTION_INTERVAL !== 0) {
       return;
     }
-    
-    try {
-      const corners = detectCard(frame);
-      runOnJS(updateCardDetection)(corners);
-    } catch (error) {
-      console.error('Frame processor error:', error);
-    }
-  }, [updateCardDetection]);
+
+    // Card detection disabled - OpenCV not accessible in worklet context
+    // Need to investigate alternative approach or native module integration
+  }, []);
 
   // Request camera permission on mount if not granted
   useEffect(() => {
@@ -132,15 +144,18 @@ export default function CameraScreen() {
         isActive={true}
         photo={true}
         frameProcessor={frameProcessor}
-      >
-        <CameraOverlay 
-          cardDetected={cardDetected}
-          detectedCardCorners={detectedCardCorners}
-          onLevelChange={handleLevelChange} 
-          showLevelIndicators={showLevelIndicators}
-        />
-        
-        <View style={styles.controlsContainer}>
+      />
+
+      {/* Overlay components rendered outside Camera */}
+      <CameraOverlay
+        cardDetected={cardDetected}
+        detectedCardCorners={detectedCardCorners}
+        onLevelChange={handleLevelChange}
+        showLevelIndicators={showLevelIndicators}
+        mode="vision"
+      />
+
+      <View style={styles.controlsContainer}>
           <View style={styles.levelToggleButton}>
             <IconButton
               icon="spirit-level"
@@ -166,18 +181,17 @@ export default function CameraScreen() {
           </TouchableOpacity>
 
           <View style={styles.spacer} />
-        </View>
+      </View>
 
-        <View style={styles.instructionContainer}>
-          <View style={styles.instructionBubble}>
-            <Text style={styles.instructionText}>
-              {showLevelIndicators && !isLevel && 'Hold phone flat and level'}
-              {isLevelOk && !cardDetected && 'Position card in frame'}
-              {isLevelOk && cardDetected && 'Ready to capture!'}
-            </Text>
-          </View>
+      <View style={styles.instructionContainer}>
+        <View style={styles.instructionBubble}>
+          <Text style={styles.instructionText}>
+            {showLevelIndicators && !isLevel && 'Hold phone flat and level'}
+            {isLevelOk && !cardDetected && 'Position card in frame'}
+            {isLevelOk && cardDetected && 'Ready to capture!'}
+          </Text>
         </View>
-      </Camera>
+      </View>
     </View>
   );
 }

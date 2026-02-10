@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Dimensions, Text, Animated } from 'react-native';
 import Svg, { Rect, Line, Polygon, Circle } from 'react-native-svg';
 import { DeviceMotion, DeviceMotionMeasurement } from 'expo-sensors';
 import { CardCorners } from '../utils/cardDetectionProcessor';
@@ -52,17 +52,20 @@ interface CameraOverlayProps {
   detectedCardCorners?: CardCorners | null;
   onLevelChange?: (isLevel: boolean) => void;
   showLevelIndicators?: boolean;
+  mode?: 'classic' | 'vision';
 }
 
-export default function CameraOverlay({ 
-  cardDetected = false, 
+export default function CameraOverlay({
+  cardDetected = false,
   detectedCardCorners = null,
-  onLevelChange, 
-  showLevelIndicators = true 
+  onLevelChange,
+  showLevelIndicators = true,
+  mode = 'classic'
 }: CameraOverlayProps) {
   const [tiltX, setTiltX] = useState(0); // Roll (side to side)
   const [tiltY, setTiltY] = useState(0); // Pitch (front to back)
   const [isLevel, setIsLevel] = useState(false);
+  const detectionOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     let subscription: any;
@@ -107,6 +110,25 @@ export default function CameraOverlay({
     };
   }, [onLevelChange]);
 
+  // Animate detection overlay opacity
+  useEffect(() => {
+    if (detectedCardCorners) {
+      // Fade in (200ms)
+      Animated.timing(detectionOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Fade out (300ms)
+      Animated.timing(detectionOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [detectedCardCorners, detectionOpacity]);
+
   const guideLeft = (width - GUIDE_WIDTH) / 2;
   const guideTop = (height - GUIDE_HEIGHT) / 2;
 
@@ -149,40 +171,42 @@ export default function CameraOverlay({
 
         {/* Detected card outline - bright cyan/green when card is detected */}
         {detectedCardCorners && (
-          <>
-            <Polygon
-              points={`${detectedCardCorners.topLeft.x * width},${detectedCardCorners.topLeft.y * height} ${detectedCardCorners.topRight.x * width},${detectedCardCorners.topRight.y * height} ${detectedCardCorners.bottomRight.x * width},${detectedCardCorners.bottomRight.y * height} ${detectedCardCorners.bottomLeft.x * width},${detectedCardCorners.bottomLeft.y * height}`}
-              fill="rgba(0, 255, 200, 0.1)"
-              stroke="#00ffc8"
-              strokeWidth={3}
-              opacity={0.9}
-            />
-            {/* Corner markers */}
-            <Circle
-              cx={detectedCardCorners.topLeft.x * width}
-              cy={detectedCardCorners.topLeft.y * height}
-              r={5}
-              fill="#00ffc8"
-            />
-            <Circle
-              cx={detectedCardCorners.topRight.x * width}
-              cy={detectedCardCorners.topRight.y * height}
-              r={5}
-              fill="#00ffc8"
-            />
-            <Circle
-              cx={detectedCardCorners.bottomRight.x * width}
-              cy={detectedCardCorners.bottomRight.y * height}
-              r={5}
-              fill="#00ffc8"
-            />
-            <Circle
-              cx={detectedCardCorners.bottomLeft.x * width}
-              cy={detectedCardCorners.bottomLeft.y * height}
-              r={5}
-              fill="#00ffc8"
-            />
-          </>
+          <Animated.View style={{ opacity: detectionOpacity }}>
+            <Svg width={width} height={height} style={styles.detectionOverlay}>
+              <Polygon
+                points={`${detectedCardCorners.topLeft.x * width},${detectedCardCorners.topLeft.y * height} ${detectedCardCorners.topRight.x * width},${detectedCardCorners.topRight.y * height} ${detectedCardCorners.bottomRight.x * width},${detectedCardCorners.bottomRight.y * height} ${detectedCardCorners.bottomLeft.x * width},${detectedCardCorners.bottomLeft.y * height}`}
+                fill="rgba(0, 255, 200, 0.1)"
+                stroke="#00ffc8"
+                strokeWidth={3}
+                opacity={0.9}
+              />
+              {/* Corner markers */}
+              <Circle
+                cx={detectedCardCorners.topLeft.x * width}
+                cy={detectedCardCorners.topLeft.y * height}
+                r={5}
+                fill="#00ffc8"
+              />
+              <Circle
+                cx={detectedCardCorners.topRight.x * width}
+                cy={detectedCardCorners.topRight.y * height}
+                r={5}
+                fill="#00ffc8"
+              />
+              <Circle
+                cx={detectedCardCorners.bottomRight.x * width}
+                cy={detectedCardCorners.bottomRight.y * height}
+                r={5}
+                fill="#00ffc8"
+              />
+              <Circle
+                cx={detectedCardCorners.bottomLeft.x * width}
+                cy={detectedCardCorners.bottomLeft.y * height}
+                r={5}
+                fill="#00ffc8"
+              />
+            </Svg>
+          </Animated.View>
         )}
 
         {/* Center crosshairs */}
@@ -243,6 +267,11 @@ export default function CameraOverlay({
           </View>
         </View>
       )}
+
+      {/* Mode label in top right corner */}
+      <View style={styles.modeLabel}>
+        <Text style={styles.modeText}>{mode.toUpperCase()}</Text>
+      </View>
     </View>
   );
 }
@@ -254,6 +283,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   svg: {
+    position: 'absolute',
+  },
+  detectionOverlay: {
     position: 'absolute',
   },
   yAxisContainer: {
@@ -308,6 +340,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     backgroundColor: '#fff',
     opacity: CENTER_LINE_OPACITY,
+  },
+  modeLabel: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  modeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 });
 

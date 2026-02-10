@@ -251,8 +251,8 @@ export default function AnalysisScreen() {
     setShowSettingsDialog(true);
   };
 
-  const handleToggleVisionMode = async () => {
-    await updateSettings({ visionModeEnabled: !settings.visionModeEnabled });
+  const handleToggleVisionMode = async (value: boolean) => {
+    await updateSettings({ visionModeEnabled: value });
   };
 
   const handleZoomReset = () => {
@@ -454,17 +454,16 @@ export default function AnalysisScreen() {
                 <Text style={styles.settingDescription}>
                   Enable AI-powered card detection with OpenCV
                 </Text>
-                <Text style={styles.settingNote}>
-                  {settings.visionModeEnabled 
-                    ? 'Requires native build (npx expo run:ios/android)' 
-                    : 'Classic mode works in Expo Go'}
-                </Text>
               </View>
               <Switch
+                key={`vision-mode-${settings.visionModeEnabled}`}
                 value={settings.visionModeEnabled}
                 onValueChange={handleToggleVisionMode}
                 color="#4caf50"
               />
+            </View>
+            <View style={styles.versionContainer}>
+              <Text style={styles.versionText}>Build: 2025-02-10-1830</Text>
             </View>
           </Dialog.Content>
           <Dialog.Actions>
@@ -634,6 +633,18 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 11,
     fontStyle: 'italic',
+  },
+  versionContainer: {
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+    alignItems: 'center',
+  },
+  versionText: {
+    color: '#666',
+    fontSize: 11,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
 });
 
