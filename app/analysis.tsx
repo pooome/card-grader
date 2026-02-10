@@ -98,6 +98,8 @@ export default function AnalysisScreen() {
   const [gradingResults, setGradingResults] = useState<Record<string, GradingResult> | null>(null);
   const [centering, setCentering] = useState<CenteringMeasurements | null>(null);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [translateX, setTranslateX] = useState(0);
+  const [translateY, setTranslateY] = useState(0);
   const [isLinesDragging, setIsLinesDragging] = useState(false);
   const [cardSide, setCardSide] = useState<'front' | 'back'>('front');
   const [recentPhotos, setRecentPhotos] = useState<MediaLibrary.AssetInfo[]>([]);
@@ -208,8 +210,10 @@ export default function AnalysisScreen() {
     }
   };
 
-  const handleTransformChange = (scale: number, translateX: number, translateY: number) => {
+  const handleTransformChange = (scale: number, tx: number, ty: number) => {
     setZoomLevel(scale);
+    setTranslateX(tx);
+    setTranslateY(ty);
   };
 
   const handleFavorite = () => {
@@ -429,7 +433,12 @@ export default function AnalysisScreen() {
           </View>
 
           {/* Zoom Level Indicator */}
-          <ZoomControls zoomLevel={zoomLevel} onReset={handleZoomReset} />
+          <ZoomControls
+            zoomLevel={zoomLevel}
+            translateX={translateX}
+            translateY={translateY}
+            onReset={handleZoomReset}
+          />
           
           {/* Card Side Toggle */}
           <CardSideToggle 

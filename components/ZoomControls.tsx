@@ -5,11 +5,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ZoomControlsProps {
   zoomLevel: number;
+  translateX?: number;
+  translateY?: number;
   onReset?: () => void;
 }
 
-export default function ZoomControls({ zoomLevel, onReset }: ZoomControlsProps) {
-  const showResetButton = zoomLevel !== 1.00;
+export default function ZoomControls({ zoomLevel, translateX = 0, translateY = 0, onReset }: ZoomControlsProps) {
+  const showResetButton = zoomLevel !== 1.00 || translateX !== 0 || translateY !== 0;
 
   return (
     <SafeAreaView edges={['bottom', 'left']} style={styles.safeArea}>
