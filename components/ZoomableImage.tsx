@@ -1,6 +1,7 @@
-import React, { useRef, useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, runOnJS } from 'react-native-reanimated';
 
 interface ZoomableImageProps {
   imageUri: string;
@@ -29,82 +30,89 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
   },
   ref
 ) => {
-  const [scale, setScale] = useState(1);
-  const [translateX, setTranslateX] = useState(0);
-  const [translateY, setTranslateY] = useState(0);
-  
-  const savedScale = useRef(1);
-  const savedTranslateX = useRef(0);
-  const savedTranslateY = useRef(0);
+  const scale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+
+  const savedScale = useSharedValue(1);
+  const startTranslateX = useSharedValue(0);
+  const startTranslateY = useSharedValue(0);
 
   // Expose reset method to parent
   useImperativeHandle(ref, () => ({
     resetZoom: () => {
-      setScale(1);
-      setTranslateX(0);
-      setTranslateY(0);
-      savedScale.current = 1;
-      savedTranslateX.current = 0;
-      savedTranslateY.current = 0;
-      
+      scale.value = 1;
+      translateX.value = 0;
+      translateY.value = 0;
+      savedScale.value = 1;
+      startTranslateX.value = 0;
+      startTranslateY.value = 0;
+
       if (onTransformChange) {
         onTransformChange(1, 0, 0);
       }
     },
   }));
 
+  const notifyTransformChange = (s: number, x: number, y: number) => {
+    if (onTransformChange) {
+      onTransformChange(s, x, y);
+    }
+  };
+
   const pinchGesture = Gesture.Pinch()
     .enabled(!isLinesDragging)
-    .onUpdate((event) => {
-      const newScale = savedScale.current * event.scale;
-      const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
-      setScale(clampedScale);
-      
-      if (onTransformChange) {
-        onTransformChange(clampedScale, translateX, translateY);
-      }
+    .onStart(() => {
+      savedScale.value = scale.value;
     })
-    .onEnd(() => {
-      savedScale.current = scale;
-      savedTranslateX.current = translateX;
-      savedTranslateY.current = translateY;
+    .onUpdate((event) => {
+      const newScale = savedScale.value * event.scale;
+      const clampedScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      scale.value = clampedScale;
+
+      if (onTransformChange) {
+        runOnJS(notifyTransformChange)(clampedScale, translateX.value, translateY.value);
+      }
     });
 
   const panGesture = Gesture.Pan()
     .enabled(!isLinesDragging)
+    .onStart(() => {
+      startTranslateX.value = translateX.value;
+      startTranslateY.value = translateY.value;
+    })
     .onUpdate((event) => {
-      const newTranslateX = savedTranslateX.current + event.translationX;
-      const newTranslateY = savedTranslateY.current + event.translationY;
-      
-      setTranslateX(newTranslateX);
-      setTranslateY(newTranslateY);
+      translateX.value = startTranslateX.value + event.translationX;
+      translateY.value = startTranslateY.value + event.translationY;
 
       if (onTransformChange) {
-        onTransformChange(scale, newTranslateX, newTranslateY);
+        runOnJS(notifyTransformChange)(scale.value, translateX.value, translateY.value);
       }
-    })
-    .onEnd(() => {
-      savedTranslateX.current = translateX;
-      savedTranslateY.current = translateY;
     });
 
   const composed = Gesture.Simultaneous(pinchGesture, panGesture);
 
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+    };
+  });
+
   return (
     <GestureDetector gesture={composed}>
       <View style={styles.container}>
-        <View 
+        <Animated.View
           style={[
-            styles.imageContainer, 
-            { 
+            styles.imageContainer,
+            {
               width: imageWidth,
               height: imageHeight,
-              transform: [
-                { translateX },
-                { translateY },
-                { scale },
-              ],
-            }
+            },
+            animatedStyle,
           ]}
         >
           <Image
@@ -113,7 +121,7 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
             resizeMode="cover"
           />
           {children}
-        </View>
+        </Animated.View>
       </View>
     </GestureDetector>
   );
