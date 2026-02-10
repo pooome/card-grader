@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, Platform } from 'react-native
 import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
 import { useRouter } from 'expo-router';
 import { Button, IconButton } from 'react-native-paper';
-import { useSharedValue, runOnJS } from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 import { useResizePlugin } from 'vision-camera-resize-plugin';
 import CameraOverlay from '../components/CameraOverlay';
 import { detectCard, CornerSmoother, type CardCorners } from '../utils/cardDetectionProcessor';
@@ -30,28 +30,48 @@ export default function CameraScreen() {
   const DETECTION_THRESHOLD = 3; // Show overlay after 3 consecutive detections
   const MISS_THRESHOLD = 5; // Hide overlay after 5 consecutive misses
 
-  // Callback to update card detection state from the frame processor
-  const updateCardDetection = useCallback((corners: CardCorners | null, detections: number, misses: number) => {
-    if (corners) {
-      const smoothed = cornerSmootherRef.current.addCorners(corners);
+  // State for testing dummy overlay (React state is fine since we're not using it in worklets)
+  const [showDummyOverlay, setShowDummyOverlay] = useState(true);
 
-      // Only show overlay after sufficient consecutive detections
-      if (detections >= DETECTION_THRESHOLD) {
-        setDetectedCardCorners(smoothed);
-        setCardDetected(!!smoothed);
-      }
-    } else {
-      // Only hide overlay after sufficient consecutive misses
-      if (misses >= MISS_THRESHOLD) {
-        cornerSmootherRef.current.reset();
-        setDetectedCardCorners(null);
-        setCardDetected(false);
-      }
+  // DUMMY MODE: Simulate card detection with a timer
+  // This bypasses the frame processor entirely to test the visualization pipeline
+  useEffect(() => {
+    if (!showDummyOverlay) {
+      setDetectedCardCorners(null);
+      setCardDetected(false);
+      return;
     }
-  }, []);
+
+    // Generate dummy corners after a short delay (simulating detection threshold)
+    const timer = setTimeout(() => {
+      const centerX = 0.5;
+      const centerY = 0.5;
+      const width = 0.5;
+      const frameAspect = 0.56;
+      const height = width * 1.4 * frameAspect;
+
+      const left = centerX - width / 2;
+      const right = centerX + width / 2;
+      const top = centerY - height / 2;
+      const bottom = centerY + height / 2;
+
+      const dummyCorners: CardCorners = {
+        topLeft: { x: left, y: top },
+        topRight: { x: right, y: top },
+        bottomRight: { x: right, y: bottom },
+        bottomLeft: { x: left, y: bottom },
+      };
+
+      setDetectedCardCorners(dummyCorners);
+      setCardDetected(true);
+    }, 500); // 500ms delay to simulate confidence threshold
+
+    return () => clearTimeout(timer);
+  }, [showDummyOverlay]);
 
   // Frame processor for real-time card detection
-  // TODO: Implement card detection once OpenCV is accessible in worklet context
+  // Currently DISABLED for dummy mode - using timer instead to avoid worklet complexity
+  // TODO: Re-enable once OpenCV integration is ready
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
 
@@ -61,8 +81,7 @@ export default function CameraScreen() {
       return;
     }
 
-    // Card detection disabled - OpenCV not accessible in worklet context
-    // Need to investigate alternative approach or native module integration
+    // Empty for now - dummy mode uses timer-based updates instead
   }, []);
 
   // Request camera permission on mount if not granted
@@ -180,7 +199,15 @@ export default function CameraScreen() {
             ]} />
           </TouchableOpacity>
 
-          <View style={styles.spacer} />
+          <View style={styles.testToggleButton}>
+            <IconButton
+              icon={showDummyOverlay ? "eye" : "eye-off"}
+              iconColor="#fff"
+              size={32}
+              onPress={() => setShowDummyOverlay(!showDummyOverlay)}
+              style={{ margin: 0 }}
+            />
+          </View>
       </View>
 
       <View style={styles.instructionContainer}>
@@ -231,6 +258,16 @@ const styles = StyleSheet.create({
     width: 60,
   },
   levelToggleButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  testToggleButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
