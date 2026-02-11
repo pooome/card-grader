@@ -9,11 +9,11 @@ interface AnalysisHeaderProps {
   onMenu?: () => void;
 }
 
-export default function AnalysisHeader({ 
-  onFavorite, 
-  onGallery, 
-  onCamera, 
-  onMenu 
+export default function AnalysisHeader({
+  onFavorite,
+  onGallery,
+  onCamera,
+  onMenu
 }: AnalysisHeaderProps) {
   return (
     <View style={styles.container}>

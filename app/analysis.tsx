@@ -29,7 +29,7 @@ import { useSettings } from '../utils/settings';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 // Estimate space taken by UI elements
-const HEADER_HEIGHT = 90; // SafeAreaView top + AnalysisHeader
+const HEADER_HEIGHT = 104; // SafeAreaView top + AnalysisHeader
 const GRADES_HEIGHT = 60; // MultiCompanyGrades
 const CENTERING_HEIGHT = 50; // CenteringDisplay
 const ZOOM_CONTROLS_HEIGHT = 80; // ZoomControls + SafeAreaView bottom
@@ -435,18 +435,7 @@ export default function AnalysisScreen() {
       ) : (
         /* Image loaded state - Show analysis */
         <>
-          {/* Multi-Company Grades */}
-          <MultiCompanyGrades
-            psaResult={gradingResults.PSA}
-            bgsResult={gradingResults.BGS}
-            cgcResult={gradingResults.CGC}
-            cardSide={cardSide}
-          />
-
-          {/* Centering Display */}
-          <CenteringDisplay centering={centering} />
-
-          {/* Zoomable Image with Draggable Lines */}
+          {/* Zoomable Image with Draggable Lines - Full screen background */}
           <View style={styles.imageWrapper}>
             <ZoomableImage
               ref={zoomableImageRef}
@@ -471,28 +460,45 @@ export default function AnalysisScreen() {
             </ZoomableImage>
           </View>
 
-          {/* Zoom Level Indicator */}
-          <ZoomControls
-            zoomLevel={zoomLevel}
-            translateX={translateX}
-            translateY={translateY}
-            onReset={handleZoomReset}
-            rotateX={rotateX}
-            rotateY={rotateY}
-            rotateZ={rotateZ}
-          />
+          {/* UI Overlay - positioned on top of image */}
+          <View style={styles.uiOverlay} pointerEvents="box-none">
+            {/* Multi-Company Grades */}
+            <MultiCompanyGrades
+              psaResult={gradingResults.PSA}
+              bgsResult={gradingResults.BGS}
+              cgcResult={gradingResults.CGC}
+              cardSide={cardSide}
+            />
 
-          {/* Advanced Toggle - Always visible on right side */}
-          <AdvancedToggle
-            advancedControlsEnabled={advancedControlsEnabled}
-            onToggle={handleToggleAdvanced}
-          />
+            {/* Centering Display */}
+            <CenteringDisplay centering={centering} />
 
-          {/* Card Side Toggle */}
-          <CardSideToggle
-            cardSide={cardSide}
-            onToggle={() => setCardSide(cardSide === 'front' ? 'back' : 'front')}
-          />
+            {/* Spacer to push zoom controls to bottom */}
+            <View style={styles.spacer} />
+
+            {/* Zoom Level Indicator */}
+            <ZoomControls
+              zoomLevel={zoomLevel}
+              translateX={translateX}
+              translateY={translateY}
+              onReset={handleZoomReset}
+              rotateX={rotateX}
+              rotateY={rotateY}
+              rotateZ={rotateZ}
+            />
+
+            {/* Advanced Toggle - Always visible on right side */}
+            <AdvancedToggle
+              advancedControlsEnabled={advancedControlsEnabled}
+              onToggle={handleToggleAdvanced}
+            />
+
+            {/* Card Side Toggle */}
+            <CardSideToggle
+              cardSide={cardSide}
+              onToggle={() => setCardSide(cardSide === 'front' ? 'back' : 'front')}
+            />
+          </View>
         </>
       )}
 
@@ -520,7 +526,7 @@ export default function AnalysisScreen() {
               />
             </View>
             <View style={styles.versionContainer}>
-              <Text style={styles.versionText}>Build: 2025-02-10-1830</Text>
+              <Text style={styles.versionText}>Build: 2025-02-10-ZZZ</Text>
             </View>
           </Dialog.Content>
           <Dialog.Actions>
@@ -649,11 +655,27 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   imageWrapper: {
-    flex: 1,
+    position: 'absolute',
+    top: HEADER_HEIGHT,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+  },
+  uiOverlay: {
+    position: 'absolute',
+    top: HEADER_HEIGHT,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'flex-start',
+    paddingTop: 0,
+  },
+  spacer: {
+    flex: 1,
   },
   settingsDialog: {
     backgroundColor: '#1a1a1a',

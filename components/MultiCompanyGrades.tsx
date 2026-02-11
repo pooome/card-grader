@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 8,
     paddingVertical: 6,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'transparent',
     gap: 6,
   },
   companyCard: {

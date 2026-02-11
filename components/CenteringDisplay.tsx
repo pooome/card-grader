@@ -32,7 +32,7 @@ export default function CenteringDisplay({ centering }: CenteringDisplayProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'transparent',
     paddingVertical: 4,
     paddingHorizontal: 8,
   },
