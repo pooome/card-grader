@@ -42,3 +42,4 @@ android/
 # Logs
 logs/
 *.log
+.firecrawl/

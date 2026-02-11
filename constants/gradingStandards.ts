@@ -8,133 +8,77 @@ export const PSA_STANDARD: GradingStandard = {
       name: 'Gem Mint',
       maxCenteringDeviationFront: 5,  // 55/45 or better
       maxCenteringDeviationBack: 25,  // 75/25 or better
-      description: 'Virtually perfect card with sharp borders and focus',
-    },
-    {
-      score: 9.5,
-      name: 'Mint+',
-      maxCenteringDeviationFront: 7.5,  // Interpolated
-      maxCenteringDeviationBack: 32.5,  // Interpolated
-      description: 'High-end mint card with exceptional qualities',
+      description: 'Virtually perfect card. Four perfectly sharp corners, sharp focus and full original gloss',
     },
     {
       score: 9,
       name: 'Mint',
       maxCenteringDeviationFront: 10,  // 60/40 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Super high-end card with only minor imperfections',
-    },
-    {
-      score: 8.5,
-      name: 'NM-MT+',
-      maxCenteringDeviationFront: 12.5,  // Interpolated
-      maxCenteringDeviationBack: 40,
-      description: 'High-end near mint to mint condition',
+      description: 'Superb condition card with only minor flaws: slight wax stain, minor printing imperfection, or slightly off-white borders',
     },
     {
       score: 8,
       name: 'NM-MT',
       maxCenteringDeviationFront: 15,  // 65/35 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Near Mint to Mint condition with minimal wear',
-    },
-    {
-      score: 7.5,
-      name: 'Near Mint+',
-      maxCenteringDeviationFront: 17.5,  // Interpolated
-      maxCenteringDeviationBack: 40,
-      description: 'High-end near mint with slight surface wear',
+      description: 'Super high-end card that appears Mint 9 at first glance. May have slight wax stain, slightest fraying at corners, or slightly off-white borders',
     },
     {
       score: 7,
       name: 'Near Mint',
       maxCenteringDeviationFront: 20,  // 70/30 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Card has slight surface wear visible upon close inspection',
-    },
-    {
-      score: 6.5,
-      name: 'EX-MT+',
-      maxCenteringDeviationFront: 25,  // Interpolated
-      maxCenteringDeviationBack: 40,
-      description: 'High-end excellent to mint condition',
+      description: 'Slight surface wear visible upon close inspection. May have slight corner fraying or minor printing blemish. Most original gloss retained',
     },
     {
       score: 6,
       name: 'EX-MT',
       maxCenteringDeviationFront: 30,  // 80/20 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Excellent to Mint with minor wear on borders',
-    },
-    {
-      score: 5.5,
-      name: 'Excellent+',
-      maxCenteringDeviationFront: 32.5,  // Interpolated
-      maxCenteringDeviationBack: 40,
-      description: 'High-end excellent condition',
+      description: 'Visible surface wear or printing defect that does not detract from overall appeal. May have light scratches, corner fraying, or slight notching',
     },
     {
       score: 5,
       name: 'Excellent',
       maxCenteringDeviationFront: 35,  // 85/15 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Borders may show wear, surface wear evident',
-    },
-    {
-      score: 4.5,
-      name: 'VG-EX+',
-      maxCenteringDeviationFront: 35,
-      maxCenteringDeviationBack: 40,
-      description: 'High-end very good to excellent',
+      description: 'Very minor corner rounding becoming evident. Surface wear or printing defects more visible. May have minor edge chipping or light scratches',
     },
     {
       score: 4,
       name: 'VG-EX',
       maxCenteringDeviationFront: 35,  // 85/15 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Very Good to Excellent with noticeable border wear',
-    },
-    {
-      score: 3.5,
-      name: 'Very Good+',
-      maxCenteringDeviationFront: 40,
-      maxCenteringDeviationBack: 40,
-      description: 'High-end very good condition',
+      description: 'Slightly rounded corners. Surface wear noticeable but modest. May have light scuffing or scratches. Some original gloss retained. Light crease possible',
     },
     {
       score: 3,
       name: 'Very Good',
       maxCenteringDeviationFront: 40,  // 90/10 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Obvious border wear and surface scratching',
-    },
-    {
-      score: 2.5,
-      name: 'Good+',
-      maxCenteringDeviationFront: 40,
-      maxCenteringDeviationBack: 40,
-      description: 'High-end good condition',
+      description: 'Some corner rounding, though not extreme. Surface wear apparent with possible scuffing or scratches. May have visible crease or discolored borders',
     },
     {
       score: 2,
       name: 'Good',
       maxCenteringDeviationFront: 40,  // 90/10 or better
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Heavily worn borders and edges',
+      description: 'Accelerated corner rounding. Surface wear obvious with scratching, scuffing, or staining. May have several creases. Original gloss may be absent',
     },
     {
       score: 1.5,
       name: 'Fair',
-      maxCenteringDeviationFront: 40,  // ~90/10 or better
-      maxCenteringDeviationBack: 40,
-      description: 'Card with extreme wear',
+      maxCenteringDeviationFront: 40,  // 90/10 or better
+      maxCenteringDeviationBack: 40,   // 90/10 or better
+      description: 'Extreme corner wear. Advanced stages of wear including scuffing, scratching, pitting, and staining. May have heavy creases. Must be fully intact',
     },
     {
       score: 1,
       name: 'Poor',
-      maxCenteringDeviationFront: 50,  // Any centering
+      maxCenteringDeviationFront: 50,  // Any centering (no official requirement stated)
       maxCenteringDeviationBack: 50,
-      description: 'Card has significant damage and wear',
+      description: 'Defects so serious that eye appeal has nearly vanished. May be missing small pieces, have major creasing, or extreme discoloration making identification difficult',
     },
   ],
 };
@@ -145,144 +89,81 @@ export const BGS_STANDARD: GradingStandard = {
     {
       score: 10,
       name: 'Pristine',
-      maxCenteringDeviationFront: 1,   // 50/50 perfect
+      maxCenteringDeviationFront: 1,   // 50/50 perfect (allowing 49/51 to 51/49)
       maxCenteringDeviationBack: 10,   // 60/40 or better
-      description: 'The best of the best - museum quality',
+      description: 'Perfect centering. Corners perfect to naked eye and mint under magnification. Edges perfect with virtually no flaws. Flawless surface with perfect gloss',
       isPristine: true,
-    },
-    {
-      score: 10,
-      name: 'Gem Mint',
-      maxCenteringDeviationFront: 5,   // 55/45 or better
-      maxCenteringDeviationBack: 10,   // 60/40 or better
-      description: 'Near perfect card',
-      isPristine: false,
     },
     {
       score: 9.5,
       name: 'Gem Mint',
-      maxCenteringDeviationFront: 5,   // ~50/50 one way, 55/45 other
+      minCenteringDeviationFront: 1,   // 50/50 one way (49/51 to 51/49)
+      maxCenteringDeviationFront: 5,   // 55/45 the other way
       maxCenteringDeviationBack: 10,   // 60/40 or better
-      description: 'Near perfect card',
+      description: 'Mint to naked eye with slight imperfections under magnification. Virtually mint edges. Few extremely minor print spots under intense scrutiny. Perfect gloss',
     },
     {
       score: 9,
       name: 'Mint',
       maxCenteringDeviationFront: 5,   // 55/45 both ways
       maxCenteringDeviationBack: 20,   // 70/30 or better
-      description: 'Excellent condition with minor flaws',
-    },
-    {
-      score: 8.5,
-      name: 'NM/Mint+',
-      maxCenteringDeviationFront: 7.5,  // Interpolated
-      maxCenteringDeviationBack: 25,    // Interpolated
-      description: 'High-end near mint to mint',
+      description: 'Mint on close inspection with speck of wear under intense scrutiny. Virtually mint edges. Handful of printing specks or one minor spot. Clean gloss with tiny scratches',
     },
     {
       score: 8,
       name: 'NM/Mint',
       maxCenteringDeviationFront: 10,  // 60/40 both ways
       maxCenteringDeviationBack: 30,   // 80/20 or better
-      description: 'Near mint to mint condition',
-    },
-    {
-      score: 7.5,
-      name: 'Near Mint+',
-      maxCenteringDeviationFront: 12.5,  // Interpolated
-      maxCenteringDeviationBack: 35,     // Interpolated
-      description: 'High-end near mint',
+      description: 'Sharp corners with slight imperfections under close examination. Relatively smooth borders. Few minor print spots. Solid gloss with very minor scratches',
     },
     {
       score: 7,
       name: 'Near Mint',
       maxCenteringDeviationFront: 15,  // 65/35 both ways
       maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'Near mint with minor wear',
-    },
-    {
-      score: 6.5,
-      name: 'Excellent/Mint+',
-      maxCenteringDeviationFront: 17.5,  // Interpolated
-      maxCenteringDeviationBack: 42.5,   // Interpolated
-      description: 'High-end excellent to mint',
+      description: 'Very minor wear on 2-3 corners. Slight roughness or minor chipping. Few noticeable print spots. Solid gloss with minor scratches. Very slight diamond cutting allowed',
     },
     {
       score: 6,
       name: 'Excellent/Mint',
       maxCenteringDeviationFront: 20,  // 70/30 both ways
       maxCenteringDeviationBack: 45,   // 95/5 or better
-      description: 'Excellent to mint condition',
-    },
-    {
-      score: 5.5,
-      name: 'Excellent+',
-      maxCenteringDeviationFront: 22.5,  // Interpolated
-      maxCenteringDeviationBack: 45,
-      description: 'High-end excellent',
+      description: 'Fuzzy corners but free of dings and fraying. Moderate roughness or chipping. Noticeable print spots. Relatively solid gloss with minor scratches. Slight diamond cutting allowed',
     },
     {
       score: 5,
       name: 'Excellent',
-      maxCenteringDeviationFront: 25,  // 75/25 front
-      maxCenteringDeviationBack: 45,   // 95/5 back
-      description: 'Excellent condition',
-    },
-    {
-      score: 4.5,
-      name: 'VG/Ex+',
-      maxCenteringDeviationFront: 27.5,  // Interpolated
-      maxCenteringDeviationBack: 47.5,   // Interpolated
-      description: 'High-end very good to excellent',
+      maxCenteringDeviationFront: 25,  // 75/25 both ways
+      maxCenteringDeviationBack: 45,   // 95/5 or better
+      description: 'Four fuzzy corners with touch of notching or minor ding. Noticeable roughness but no layering. Some gloss lost from surface. Slight diamond cutting allowed',
     },
     {
       score: 4,
       name: 'VG/Ex',
-      maxCenteringDeviationFront: 30,  // 80/20 front
+      maxCenteringDeviationFront: 30,  // 80/20 both ways
       maxCenteringDeviationBack: 50,   // 100/0 or better
-      description: 'Very good to excellent',
-    },
-    {
-      score: 3.5,
-      name: 'Very Good+',
-      maxCenteringDeviationFront: 32.5,  // Interpolated
-      maxCenteringDeviationBack: 50,
-      description: 'High-end very good',
+      description: 'Slight notching or layering, or moderate dings. Readily chipped or notched edges. Hairline creases possible. Good deal of gloss lost. Moderate diamond cutting allowed',
     },
     {
       score: 3,
       name: 'Very Good',
-      maxCenteringDeviationFront: 35,  // 85/15 front
-      maxCenteringDeviationBack: 50,   // 100/0 back
-      description: 'Very good condition',
-    },
-    {
-      score: 2.5,
-      name: 'Good+',
-      maxCenteringDeviationFront: 37.5,  // Interpolated
-      maxCenteringDeviationBack: 50,
-      description: 'High-end good',
+      maxCenteringDeviationFront: 35,  // 85/15 both ways
+      maxCenteringDeviationBack: 50,   // 100/0 or better
+      description: 'Slightly rounded or noticeably notched corners with slight layering. Heavy notching or moderate layering. Very minor creases. Very little surface gloss. Moderate diamond cutting allowed',
     },
     {
       score: 2,
       name: 'Good',
-      maxCenteringDeviationFront: 40,  // 90/10 front
-      maxCenteringDeviationBack: 50,   // 100/0 or off-cut back
-      description: 'Good condition',
-    },
-    {
-      score: 1.5,
-      name: 'Fair',
-      maxCenteringDeviationFront: 45,  // Interpolated
-      maxCenteringDeviationBack: 50,
-      description: 'Fair condition',
+      maxCenteringDeviationFront: 40,  // 90/10 both ways
+      maxCenteringDeviationBack: 50,   // 100/0 or offcut
+      description: 'Noticeably rounded or heavily notched corners with moderate layering. Severely chipped or notched edges. Noticeable creases. Surface devoid of gloss. Noticeable diamond cutting allowed',
     },
     {
       score: 1,
       name: 'Poor',
-      maxCenteringDeviationFront: 50,  // 100/0 or off-cut
-      maxCenteringDeviationBack: 50,
-      description: 'Poor condition',
+      maxCenteringDeviationFront: 50,  // 100/0 or offcut
+      maxCenteringDeviationBack: 50,   // 100/0 or offcut
+      description: 'Heavily rounded or heavily notched with noticeable layering. Destructive chipping or notching. Heavy creases. Severe color imperfections. No original gloss. Heavy diamond cutting allowed',
     },
   ],
 };
@@ -293,144 +174,81 @@ export const CGC_STANDARD: GradingStandard = {
     {
       score: 10,
       name: 'Pristine',
-      maxCenteringDeviationFront: 0,   // 50/50 perfect
-      maxCenteringDeviationBack: 0,    // 50/50 perfect
-      description: 'Virtually flawless under 10x magnification',
+      maxCenteringDeviationFront: 1,   // 50/50 perfect (allowing 49/51 to 51/49)
+      maxCenteringDeviationBack: 10,   // 60/40 or better
+      description: 'Perfect centering with no evidence of any manufacturing or handling defects. Corners perfect to naked eye and gem mint under 10x magnification. Flawless surface with perfect gloss',
       isPristine: true,
     },
     {
-      score: 10,
-      name: 'Gem Mint',
-      maxCenteringDeviationFront: 5,   // 55/45 or better
-      maxCenteringDeviationBack: 25,   // 75/25 or better
-      description: 'Perfect or near-perfect card',
-      isPristine: false,
-    },
-    {
       score: 9.5,
-      name: 'Mint+',
-      maxCenteringDeviationFront: 7,   // Slightly less than Gem Mint
-      maxCenteringDeviationBack: 30,
-      description: 'Outstanding card with minimal wear',
+      name: 'Gem Mint',
+      minCenteringDeviationFront: 1,   // 50/50 one way (49/51 to 51/49)
+      maxCenteringDeviationFront: 5,   // 55/45 the other way
+      maxCenteringDeviationBack: 10,   // 60/40 or better
+      description: 'Mint to naked eye with slight imperfections under magnification. Virtually mint edges. Few extremely minor print spots. Deep color with perfect gloss',
     },
     {
       score: 9,
       name: 'Mint',
-      maxCenteringDeviationFront: 10,  // 60/40 or better
-      maxCenteringDeviationBack: 40,   // 90/10 or better
-      description: 'High quality card with slight imperfections',
-    },
-    {
-      score: 8.5,
-      name: 'NM/Mint+',
-      maxCenteringDeviationFront: 12,  // Interpolated
-      maxCenteringDeviationBack: 40,
-      description: 'High-end near mint to mint',
+      maxCenteringDeviationFront: 5,   // 55/45 both ways
+      maxCenteringDeviationBack: 20,   // 70/30 or better
+      description: 'At least above-average centering. Mint on close inspection. Virtually mint edges with unobtrusive specks of chipping. Handful of printing specks. Clean gloss with tiny scratches',
     },
     {
       score: 8,
       name: 'NM/Mint',
-      maxCenteringDeviationFront: 15,  // 65/35 or better
-      maxCenteringDeviationBack: 40,
-      description: 'Near mint to mint condition',
-    },
-    {
-      score: 7.5,
-      name: 'Near Mint+',
-      maxCenteringDeviationFront: 15,  // 65/35 allowed
-      maxCenteringDeviationBack: 40,
-      description: 'High-end near mint',
+      maxCenteringDeviationFront: 10,  // 60/40 both ways
+      maxCenteringDeviationBack: 30,   // 80/20 or better
+      description: 'At least average centering. Sharp corners with slight imperfections. Relatively smooth borders. Few minor print spots. Solid gloss with very minor scratches',
     },
     {
       score: 7,
       name: 'Near Mint',
-      maxCenteringDeviationFront: 20,  // 70/30 or better
-      maxCenteringDeviationBack: 40,
-      description: 'Near mint with touch of wear',
-    },
-    {
-      score: 6.5,
-      name: 'Ex/NM+',
-      maxCenteringDeviationFront: 22,  // Interpolated
-      maxCenteringDeviationBack: 40,
-      description: 'High-end excellent to near mint',
+      maxCenteringDeviationFront: 15,  // 65/35 both ways
+      maxCenteringDeviationBack: 40,   // 90/10 or better
+      description: 'Very minor wear on 2-3 corners. Slight roughness or minor chipping. Few noticeable print spots. Solid gloss with minor scratches. Very slight diamond cutting allowed',
     },
     {
       score: 6,
       name: 'Ex/NM',
-      maxCenteringDeviationFront: 25,  // 75/25 or better
-      maxCenteringDeviationBack: 40,
-      description: 'Excellent to near mint',
-    },
-    {
-      score: 5.5,
-      name: 'Excellent+',
-      maxCenteringDeviationFront: 27.5,  // Interpolated
-      maxCenteringDeviationBack: 42.5,   // Interpolated
-      description: 'High-end excellent',
+      maxCenteringDeviationFront: 20,  // 70/30 both ways
+      maxCenteringDeviationBack: 45,   // 95/5 or better
+      description: 'Fuzzy corners but free of dings and fraying. Moderate roughness or chipping. Noticeable print spots. Relatively solid gloss with minor scratches. Slight diamond cutting allowed',
     },
     {
       score: 5,
       name: 'Excellent',
-      maxCenteringDeviationFront: 30,  // Interpolated
-      maxCenteringDeviationBack: 45,
-      description: 'Excellent condition',
-    },
-    {
-      score: 4.5,
-      name: 'VG/Ex+',
-      maxCenteringDeviationFront: 32.5,  // Interpolated
-      maxCenteringDeviationBack: 45,
-      description: 'High-end very good to excellent',
+      maxCenteringDeviationFront: 25,  // 75/25 both ways
+      maxCenteringDeviationBack: 45,   // 95/5 or better
+      description: 'Four fuzzy corners with touch of notching or minor ding. Noticeable roughness but no layering. Some gloss lost from surface. Slight diamond cutting allowed',
     },
     {
       score: 4,
       name: 'VG/Ex',
-      maxCenteringDeviationFront: 35,  // 85/15
-      maxCenteringDeviationBack: 45,
-      description: 'Very good to excellent',
-    },
-    {
-      score: 3.5,
-      name: 'Very Good+',
-      maxCenteringDeviationFront: 37.5,  // Interpolated
-      maxCenteringDeviationBack: 47.5,   // Interpolated
-      description: 'High-end very good',
+      maxCenteringDeviationFront: 30,  // 80/20 both ways
+      maxCenteringDeviationBack: 50,   // 100/0 or better
+      description: 'Slight notching or layering, or moderate dings. Readily chipped or notched edges. Hairline creases. Good deal of gloss lost. Moderate diamond cutting allowed',
     },
     {
       score: 3,
       name: 'Very Good',
-      maxCenteringDeviationFront: 40,
-      maxCenteringDeviationBack: 50,
-      description: 'Very good condition',
-    },
-    {
-      score: 2.5,
-      name: 'Good+',
-      maxCenteringDeviationFront: 42.5,  // Interpolated
-      maxCenteringDeviationBack: 50,
-      description: 'High-end good',
+      maxCenteringDeviationFront: 35,  // 85/15 both ways
+      maxCenteringDeviationBack: 50,   // 100/0 or better
+      description: 'Slightly rounded or noticeably notched corners with slight layering. Heavy notching or moderate layering. Very minor creases. Very little surface gloss. Moderate diamond cutting allowed',
     },
     {
       score: 2,
       name: 'Good',
-      maxCenteringDeviationFront: 45,
-      maxCenteringDeviationBack: 50,
-      description: 'Good condition',
-    },
-    {
-      score: 1.5,
-      name: 'Fair',
-      maxCenteringDeviationFront: 48,
-      maxCenteringDeviationBack: 50,
-      description: 'Fair condition with major defects',
+      maxCenteringDeviationFront: 40,  // 90/10 both ways
+      maxCenteringDeviationBack: 50,   // 100/0 or offcut
+      description: 'Noticeably rounded or heavily notched corners with moderate layering. Severely chipped or notched edges. Noticeable creases. Surface devoid of gloss. Noticeable diamond cutting allowed',
     },
     {
       score: 1,
       name: 'Poor',
-      maxCenteringDeviationFront: 50,
-      maxCenteringDeviationBack: 50,
-      description: 'Poor condition with severe damage',
+      maxCenteringDeviationFront: 50,  // 100/0 or offcut
+      maxCenteringDeviationBack: 50,   // 100/0 or offcut
+      description: 'Heavily rounded or heavily notched with noticeable layering. Destructive chipping or notching. Heavy creases. Severe color imperfections. No original gloss. Heavy diamond cutting allowed',
     },
   ],
 };
