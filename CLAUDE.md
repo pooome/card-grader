@@ -1,212 +1,130 @@
-# Feature Branch: Draggable Notch Arrows + Grading Standards Update
+# TCG Card Grader
 
-## Branch Overview
-This feature branch (`feature/draggable-notch-arrows`) includes multiple UI/UX improvements and a comprehensive update to grading standards:
+## Project Purpose
+React Native mobile app for grading Trading Card Game cards (Pokemon, MTG, Yu-Gi-Oh, Sports cards). Uses computer vision to detect card edges and provide professional grading assessments based on PSA, BGS, and CGC standards.
 
-1. **Layout Restructuring** - Panned image visible behind transparent UI
-2. **Draggable Notch Improvements** - Directional arrows and staggered positions
-3. **Independent Zoom Controls** - Rotation preserved when resetting zoom
-4. **Grading Standards Update** - Official sources with asymmetric centering support
+## Core Feature: Card Centering Analysis
+**IMPORTANT**: The primary feature is automatic card centering detection - measuring how well-centered the printed image is on the physical card.
 
----
+**Centering requires detecting TWO boundaries:**
+1. **Physical card edges** (outer boundary) - 4 lines: top, bottom, left, right of card stock
+2. **Printed border edges** (inner boundary) - 4 lines: top, bottom, left, right of artwork/border
 
-## Commit 1: Restructure Layout (857c6f1)
+**Critical calculation:**
+- Vertical centering = Top margin vs Bottom margin (e.g., 55/45, 60/40)
+- Horizontal centering = Left margin vs Right margin (e.g., 52/48, 70/30)
+- Perfect 50/50 = Gem Mint eligible
+- 70/30 or worse = Drops grade by 2-3 points
 
-### Changes
-- Positioned `ZoomableImage` absolutely to fill entire screen below header
-- Created UI overlay container with transparent background for grades and centering display
-- Made `MultiCompanyGrades` and `CenteringDisplay` backgrounds transparent
-- Grouped all UI elements (grades, centering, zoom controls, toggles) in single overlay
-- Updated header height constant and spacing
+## Key Architecture Decisions
 
-### Benefit
-The panned/zoomed image is now visible through transparent areas of the UI components, allowing better analysis workflow without UI elements blocking the card view.
+### Draggable Lines System
+The app uses an 8-line draggable system (`components/DraggableLines.tsx`) for user adjustment:
+- User can manually correct any misdetected boundaries
+- Real-time calculations update as lines are dragged
+- Touch gestures handled via React Native Gesture Handler
+- Currently used for corner wear; adaptable for edge detection
 
-### Files Modified
-- `app/analysis.tsx` - Major layout restructuring
-- `components/AnalysisHeader.tsx` - Header height updates
-- `components/CenteringDisplay.tsx` - Transparent background
-- `components/MultiCompanyGrades.tsx` - Transparent background
+### Grading Logic
+**IMPORTANT**: Final grade = WORST of all factors (centering, corners, edges, surface)
+- Located in `utils/grading.ts` and `constants/gradingStandards.ts`
+- Supports asymmetric centering for BGS/CGC 9.5 grades (50/50 one way + 55/45 other)
+- Pristine 10 uses 1% deviation tolerance (49/51 to 51/49) for practical measurement
 
----
+## Development Commands
 
-## Commit 2: Draggable Notch Enhancements (c0e1a9e)
-
-### Changes
-- Added arrow icons to each notch indicating drag direction (inward for inner borders, outward for outer borders)
-- Staggered notch positions by 50px to prevent overlap between inner/outer notches on same side
-- Increased notch length from 10px to 15px for better visibility
-- Extracted arrow creation into reusable `createArrowPath` function
-- Used chevron-style arrows with visual centering adjustment
-- Standardized notch `strokeWidth` to constant value
-
-### Benefit
-Improves usability by making it clear which direction each border can be adjusted and prevents accidental interaction with overlapping handles.
-
-### Files Modified
-- `components/DraggableLines.tsx` - Added arrow rendering and staggered positioning
-
----
-
-## Commit 3: Independent Zoom Reset (3f1cce5)
-
-### Changes
-- Removed rotation reset from `handleZoomReset` in analysis.tsx
-- Removed `rotateX/Y/Z` props from `ZoomControls` component and interface
-- Removed rotation reset from `ZoomableImage.resetZoom()` method
-- Updated `hasTransformations` check to exclude rotation values
-
-### Benefit
-The reset button now only resets zoom level and pan position, preserving 3D rotation/tilt adjustments made via the advanced rotation controls. This allows users to maintain their desired viewing angle while resetting the zoom.
-
-### Files Modified
-- `app/analysis.tsx` - Removed rotation reset logic
-- `components/ZoomControls.tsx` - Simplified interface
-- `components/ZoomableImage.tsx` - Removed rotation from reset
-
----
-
-## Commit 4: Grading Standards Update (1812d23)
-
-### Overview
-Updated all grading standards (PSA, BGS, CGC) to match official sources exactly. Removed interpolated half-point grades that were not officially documented and added support for asymmetric centering requirements.
-
-## Changes Made
-
-### 1. PSA Grading Standards
-**Source:** https://www.psacard.com/gradingstandards
-
-**Official Grades (11 total):**
-- PSA 10 (Gem Mint) - 55/45 front, 75/25 back
-- PSA 9 (Mint) - 60/40 front, 90/10 back
-- PSA 8 (NM-MT) - 65/35 front, 90/10 back
-- PSA 7 (Near Mint) - 70/30 front, 90/10 back
-- PSA 6 (EX-MT) - 80/20 front, 90/10 back
-- PSA 5 (Excellent) - 85/15 front, 90/10 back
-- PSA 4 (VG-EX) - 85/15 front, 90/10 back
-- PSA 3 (Very Good) - 90/10 front, 90/10 back
-- PSA 2 (Good) - 90/10 front, 90/10 back
-- PSA 1.5 (Fair) - 90/10 front, 90/10 back
-- PSA 1 (Poor) - No official centering requirement
-
-**Removed:** All half-point grades (9.5, 8.5, 7.5, 6.5, 5.5, 4.5, 3.5, 2.5) - not officially documented by PSA
-
-### 2. BGS (Beckett) Grading Standards
-**Source:** https://www.beckett.com/grading/scale
-
-**Official Grades (11 total):**
-- Pristine 10 - 50/50 perfect (1% deviation allowed for practicality)
-- Gem Mint 9.5 - **50/50 one way + 55/45 other** front, 60/40 back
-- Mint 9 - 55/45 both ways front, 70/30 back
-- NM/Mint 8 - 60/40 both ways front, 80/20 back
-- Near Mint 7 - 65/35 both ways front, 90/10 back
-- Excellent/Mint 6 - 70/30 both ways front, 95/5 back
-- Excellent 5 - 75/25 both ways front, 95/5 back
-- VG/Ex 4 - 80/20 both ways front, 100/0 back
-- Very Good 3 - 85/15 both ways front, 100/0 back
-- Good 2 - 90/10 both ways front, 100/0 or offcut back
-- Poor 1 - 100/0 or offcut front/back
-
-**Removed:** All half-point grades except 9.5, second Gem Mint 10 entry
-
-### 3. CGC Cards Grading Standards
-**Source:** Heritage Auctions TCG Grading Guide (CGC Cards website unavailable)
-
-**Official Grades (11 total):**
-- Same structure as BGS with identical centering requirements
-- Pristine 10 - 50/50 perfect (1% deviation)
-- Gem Mint 9.5 - **50/50 one way + 55/45 other** front, 60/40 back
-- [Grades 9 through 1 follow BGS structure]
-
-**Removed:** All half-point grades except 9.5, second Gem Mint 10 entry
-
-## Technical Implementation
-
-### Type Changes (`types/grading.ts`)
-Added `minCenteringDeviationFront` field to support asymmetric centering:
-```typescript
-export interface GradeThreshold {
-  score: number;
-  name: string;
-  maxCenteringDeviationFront: number;
-  minCenteringDeviationFront?: number; // For BGS/CGC 9.5: one direction <= min, other <= max
-  maxCenteringDeviationBack: number;   // Always symmetric
-  description: string;
-  isPristine?: boolean;
-}
+```bash
+npm start              # Start Expo dev server
+npm run ios           # iOS simulator
+npm run android       # Android emulator
+npx expo prebuild     # Generate native projects (required for OpenCV)
 ```
 
-### Grading Logic (`utils/grading.ts`)
-Updated to handle asymmetric centering requirements:
-- When `minCenteringDeviationFront` is present (9.5 grades): ONE direction must be ≤ min AND OTHER direction must be ≤ max
-- Otherwise: BOTH directions must be ≤ max (existing behavior)
-- Only applies to front side - back centering is always symmetric
+## Critical Dependencies
 
-### Pristine 10 Adjustment
-Changed from 0% deviation to 1% deviation (49/51 to 51/49) for practicality:
-- 0% would require mathematically perfect 50.000/50.000 centering
-- 1% allows for realistic measurement tolerances while maintaining "perfect" standard
+**Computer Vision:**
+- `react-native-fast-opencv` - **CRITICAL** for edge detection and card boundary identification
+- Requires development build (not Expo Go)
+- No web support for OpenCV features
 
-## Validation
-All centering values verified against official sources:
-- `.firecrawl/psa-grading-standards.md` - PSA official standards
-- `.firecrawl/bgs-grading-scale.md` - BGS official standards
-- `.firecrawl/heritage-tcg-grading.md` - CGC Cards standards (via Heritage Auctions)
+**Camera:**
+- `expo-camera` - Standard camera
+- `react-native-vision-camera` - Advanced camera with frame processing
+- `vision-camera-resize-plugin` - Performance optimization
 
-### Example: BGS/CGC 9.5 Centering
-A card with:
-- Horizontal: 51/49 (1% deviation)
-- Vertical: 54/46 (4% deviation)
+## Testing Instructions
 
-Will correctly qualify for 9.5 because:
-- One direction (1%) ≤ min (1%) ✓
-- Other direction (4%) ≤ max (5%) ✓
+**MUST test on physical devices:**
+- Camera features don't work reliably in simulators
+- iOS and Android have different camera behaviors
+- Test with various card sizes, lighting conditions, and card types (holographic, borderless)
 
-This accurately implements "50/50 one way, 55/45 the other" requirement.
+**Test centering edge cases:**
+- Off-center cards (70/30, 80/20)
+- Borderless cards (no inner boundary)
+- Holographic/reflective surfaces
+- Poor lighting conditions
 
-### Files Modified
-- `constants/gradingStandards.ts` - Updated all three grading standards
-- `types/grading.ts` - Added `minCenteringDeviationFront` field
-- `utils/grading.ts` - Updated grading logic for asymmetric centering
-- `.gitignore` - Added `.firecrawl/` directory
-- `CLAUDE.md` - Documentation (this file)
+## Platform-Specific Requirements
 
----
+**iOS:**
+- Camera permissions required in Info.plist
+- Development build needed for OpenCV
 
-## Feature Branch Summary
+**Android:**
+- Camera permissions in AndroidManifest.xml
+- Development build needed for OpenCV
 
-### Total Changes
-**4 commits** with improvements spanning UI/UX, controls, and grading accuracy:
+**Web:**
+- Limited camera support
+- No OpenCV features available
 
-1. ✅ **Layout** - Transparent UI overlay for better image visibility
-2. ✅ **Notches** - Directional arrows and staggered positioning
-3. ✅ **Controls** - Independent zoom reset preserving rotation
-4. ✅ **Grading** - Official standards with asymmetric centering
+## Non-Obvious Patterns
 
-### Files Modified Across Branch
-- `app/analysis.tsx`
-- `components/AnalysisHeader.tsx`
-- `components/CenteringDisplay.tsx`
-- `components/MultiCompanyGrades.tsx`
-- `components/DraggableLines.tsx`
-- `components/ZoomControls.tsx`
-- `components/ZoomableImage.tsx`
-- `constants/gradingStandards.ts`
-- `types/grading.ts`
-- `utils/grading.ts`
-- `.gitignore`
+### Centering Calculations
+Located in `utils/centeringCalculations.ts`:
+```typescript
+// Centering is calculated as deviation from perfect 50/50
+// e.g., 55/45 = 5% deviation, 70/30 = 20% deviation
+```
 
-### Impact
-These changes significantly improve the card analysis workflow:
-- **Better visibility** of card details during analysis
-- **Clearer controls** for border adjustment
-- **More flexible** zoom/rotation manipulation
-- **More accurate** grading based on official standards
+### Asymmetric Centering (BGS/CGC 9.5)
+```typescript
+// Special case: One direction must be 50/50, other can be 55/45
+// Logic in utils/grading.ts checks both combinations:
+// - Horizontal ≤ 1% AND Vertical ≤ 5%, OR
+// - Vertical ≤ 1% AND Horizontal ≤ 5%
+```
 
-### Testing Recommendations
-1. Test transparent UI overlay with zoomed/panned images
-2. Verify draggable notch arrows point correct directions
-3. Confirm zoom reset preserves rotation angles
-4. Test grading with symmetric centering (most grades)
-5. Test grading with asymmetric centering (9.5 grades specifically)
-6. Verify all three grading companies (PSA, BGS, CGC) work correctly
+### Image Coordinate System
+- React Native uses top-left origin (0,0)
+- Coordinates are in device pixels
+- Must account for image scaling when displaying on screen
+- Draggable lines use percentage-based positioning for consistency
+
+## Common Gotchas
+
+1. **OpenCV requires native modules** - Must use development build, not Expo Go
+2. **Camera frame processing is CPU intensive** - Resize frames before processing
+3. **Reanimated animations** - Use worklets for 60fps performance during line dragging
+4. **Type imports** - Always use `import type { ... }` for type-only imports
+5. **Grading standards updated** - See `constants/gradingStandards.ts` for official PSA/BGS/CGC standards (scraped from official sources)
+
+## Success Criteria
+
+**MVP for centering feature:**
+1. ✅ Auto-detect card edges (best effort)
+2. ✅ Auto-detect printed border edges (best effort)
+3. ✅ User can manually adjust all 8 boundary lines
+4. ✅ Real-time centering calculations
+5. ✅ Display top/bottom/left/right margins
+6. ✅ Display vertical/horizontal centering ratios (e.g., "55/45")
+7. ✅ Show predicted grade based on centering
+
+## Code Style
+
+- Use arrow functions for component definitions
+- Extract complex calculations to utility files
+- Keep components focused and single-purpose
+- Comment complex algorithms (especially grading logic and centering calculations)
+- Pure functions in `utils/` - no side effects
