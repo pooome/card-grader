@@ -1,0 +1,360 @@
+# TCG Card Grader - Claude Init
+
+## Project Overview
+This is a React Native mobile application for grading Trading Card Game (TCG) cards such as Pokemon, Magic: The Gathering, Yu-Gi-Oh, etc. The app uses computer vision and machine learning to automatically detect card edges and provide professional grading assessments.
+
+### Primary Feature: Card Centering
+The main focus is **card centering analysis** - determining how well-centered the card's printed image is on the physical card stock. This is a critical grading factor for professional card grading services (PSA, BGS, CGC).
+
+**Centering is measured by:**
+- **Top vs Bottom margins**: Equality of space above and below the card's printed border
+- **Left vs Right margins**: Equality of space on both sides of the card's printed border
+
+Perfect centering (50/50) receives the highest grades, while off-center cards (e.g., 70/30) receive lower grades.
+
+### Main User Flow
+1. User scans a TCG card using the device camera
+2. ML algorithm/computer vision automatically detects the card edges and printed border
+3. **User can manually adjust detected edges** - Drag lines to correct any misdetected boundaries
+4. App calculates top, bottom, left, and right margin sizes
+5. App displays centering measurements and predicted grade
+6. User receives grade based on PSA, BGS, or CGC standards
+
+### Additional Features
+- **Corner wear analysis**: Manual measurement using draggable lines (currently implemented)
+- **Future**: Scuff detection, surface imperfections, edge wear detection
+
+## Tech Stack
+- **Framework**: React Native with Expo SDK 54+
+- **Language**: TypeScript (strict mode enabled)
+- **Navigation**: Expo Router (file-based routing)
+- **UI Library**: React Native Paper (Material Design)
+- **Camera**: Expo Camera & React Native Vision Camera
+- **Computer Vision**: React Native Fast OpenCV (experimental card detection)
+- **Gestures**: React Native Gesture Handler
+- **Animation**: React Native Reanimated 3
+- **Graphics**: React Native SVG
+- **Image Processing**: Expo Image Manipulator
+
+## Project Structure
+
+```
+app/                           # Expo Router screens (file-based routing)
+├── _layout.tsx               # Root layout with navigation
+├── index.tsx                 # Splash/welcome screen
+├── home.tsx                  # Main menu with camera/upload options
+├── camera.tsx                # Camera mode selector
+├── camera-classic.tsx        # Standard camera with crosshair overlay
+├── camera-vision.tsx         # Vision mode with OpenCV card detection
+└── analysis.tsx              # Main grading screen with draggable lines
+
+components/                    # Reusable UI components
+├── CameraOverlay.tsx         # Crosshair/guide overlay for card positioning
+├── DraggableLines.tsx        # 8 interactive corner measurement lines (manual corner analysis)
+├── ZoomableImage.tsx         # Pinch-to-zoom image container
+├── ZoomControls.tsx          # Zoom in/out buttons
+├── MultiCompanyGrades.tsx    # Display PSA, BGS, CGC grades
+├── AnalysisHeader.tsx        # Analysis screen header
+├── CardSideToggle.tsx        # Front/back toggle
+└── CenteringDisplay.tsx      # **PRIMARY** - Shows top/bottom/left/right centering measurements
+
+utils/                         # Business logic and calculations
+├── centeringCalculations.ts  # **PRIMARY** - Card centering measurements (top/bottom/left/right)
+├── cardDetectionProcessor.ts # **PRIMARY** - OpenCV edge detection for card boundaries
+├── grading.ts                # Grade calculation for all standards (PSA, BGS, CGC)
+├── cornerCalculations.ts     # Corner wear percentage calculations (manual feature)
+├── cornerToBoundaries.ts     # Convert corner points to boundary lines
+├── imageProcessing.ts        # Image manipulation utilities
+└── settings.ts               # App settings and preferences
+
+constants/                     # Configuration and standards
+└── gradingStandards.ts       # PSA, BGS, CGC grading thresholds
+
+types/                         # TypeScript type definitions
+├── grading.ts                # Grading system types
+└── measurements.ts           # Measurement and corner types
+```
+
+## Key Patterns and Conventions
+
+### File Organization
+- Screens live in `app/` directory using Expo Router conventions
+- Reusable components go in `components/` directory
+- Pure functions and calculations go in `utils/` directory
+- Type definitions live in `types/` directory
+- Constants and configuration in `constants/` directory
+
+### Import Aliases
+- Use `@/` alias for root imports (configured in tsconfig.json)
+- Example: `import { calculateCornerWear } from '@/utils/cornerCalculations'`
+
+### TypeScript
+- Strict mode is enabled
+- Always define prop interfaces for components
+- Use type imports: `import type { GradingStandard } from '@/types/grading'`
+
+### Component Patterns
+- Functional components with hooks
+- Use React Native Paper components for UI consistency
+- Gesture Handler for touch interactions
+- Reanimated for smooth animations
+
+### State Management
+- Local component state with useState
+- AsyncStorage for persistent settings
+- No global state management (Redux/Context) currently
+
+## Grading System
+
+The app supports three professional grading standards:
+1. **PSA** (Professional Sports Authenticator)
+2. **BGS** (Beckett Grading Services)
+3. **CGC** (Certified Guaranty Company)
+
+### Card Centering - PRIMARY FEATURE
+
+**How Centering Works:**
+1. **Automatic Detection**: Detect the physical card edges (outer boundaries)
+2. **Automatic Detection**: Detect the printed border/artwork edges (inner boundaries)
+3. **Manual Override**: User can drag/slide the detected edge lines to correct misdetections
+   - 4 outer boundary lines (top, bottom, left, right of physical card)
+   - 4 inner boundary lines (top, bottom, left, right of printed border)
+   - Interactive draggable lines similar to the corner wear feature
+4. Calculate margin sizes:
+   - Top margin: distance from top edge to print border
+   - Bottom margin: distance from bottom edge to print border
+   - Left margin: distance from left edge to print border
+   - Right margin: distance from right edge to print border
+5. Calculate centering ratios:
+   - **Vertical centering**: Top vs Bottom (e.g., 55/45, 50/50, 60/40)
+   - **Horizontal centering**: Left vs Right (e.g., 52/48, 50/50, 70/30)
+
+**Centering Grade Impact:**
+- 50/50 or 55/45: Gem Mint eligible
+- 60/40: Mint eligible
+- 65/35 or worse: Reduces overall grade significantly
+- 70/30 or worse: Can drop grade by 2-3 points
+
+### Corner Wear Analysis - SECONDARY FEATURE
+
+Each card corner has two draggable lines for manual measurement:
+- **Horizontal line**: Marks where corner wear begins vertically
+- **Vertical line**: Marks where corner wear begins horizontally
+
+Corner colors:
+- Red: Top-left
+- Blue: Top-right
+- Orange: Bottom-left
+- Green: Bottom-right
+
+**Corner Grade Calculation:**
+1. Calculate wear percentage for each corner based on line positions
+2. Find maximum wear percentage across all 4 corners
+3. Map max wear to grade based on selected standard's thresholds
+
+### Overall Grade
+The final card grade is determined by the WORST grading factor:
+- Centering
+- Corners
+- Edges (future)
+- Surface (future)
+
+## Technical Approach for Edge Detection
+
+### Card Edge Detection Algorithms
+The app needs to detect two sets of boundaries:
+
+1. **Physical Card Edges (Outer Boundary)**
+   - Detect the rectangular outline of the physical card
+   - Use computer vision to find straight edges and corners
+   - Approach: Canny edge detection + Hough line transform + corner detection
+   - Challenges: Lighting, background, card rotation
+
+2. **Printed Border Edges (Inner Boundary)**
+   - Detect the artwork/border boundary within the card
+   - Use color/contrast detection to find border edges
+   - Approach: Color thresholding + contour detection
+   - Challenges: Holographic cards, borderless cards, varying card designs
+
+### ML/Algorithm Options
+- **OpenCV**: Edge detection, contour finding, geometric transformations
+- **TensorFlow Lite**: ML model for card recognition (future)
+- **Custom algorithm**: Hybrid approach using edge detection + color analysis
+
+## Important Dependencies
+
+### Camera & Vision
+- `expo-camera`: Standard camera functionality
+- `react-native-vision-camera`: Advanced camera with frame processing
+- `react-native-fast-opencv`: **CRITICAL** - OpenCV for edge detection and card boundary identification
+- `vision-camera-resize-plugin`: Frame resizing for performance
+
+### Image Processing
+- `expo-image-picker`: Gallery photo selection
+- `expo-image-manipulator`: Image resizing and cropping
+- `expo-media-library`: Saving photos to device
+
+### UI & Interaction
+- `react-native-paper`: Material Design components
+- `react-native-gesture-handler`: Touch gestures
+- `react-native-reanimated`: Smooth animations
+- `react-native-svg`: SVG rendering for lines and overlays
+
+## Development Commands
+
+```bash
+npm start          # Start Expo dev server
+npm run ios        # Run on iOS simulator
+npm run android    # Run on Android emulator
+npm run web        # Run in web browser (limited camera support)
+```
+
+## Current Focus Areas
+
+### Primary Development Goal: Card Centering Detection
+The main feature being developed is **automatic card centering analysis**:
+- Use ML/computer vision to detect card edges (outer boundary)
+- Detect the printed border/artwork edges (inner boundary)
+- Calculate top, bottom, left, right margin sizes
+- Compute centering ratios (e.g., 55/45, 60/40)
+- Display predicted grade based on centering
+
+### Currently Implemented Features
+- Camera vision mode with OpenCV card detection (`camera-vision.tsx`)
+- Classic camera mode with manual crosshair positioning
+- **Interactive draggable lines system** (`DraggableLines.tsx`) - used for manual corner wear measurement
+- Multi-standard grading support (PSA, BGS, CGC)
+- Zoom and pan for precise measurement
+- Basic centering calculations (`centeringCalculations.ts`)
+
+**Note**: The draggable lines component can be adapted for centering edge detection - instead of 8 corner lines, we need 8 edge lines (4 outer card boundaries + 4 inner print boundaries)
+
+### Known Limitations
+- Centering detection is not fully automatic yet
+- OpenCV card detection is experimental (may be reverted)
+- Corner wear requires manual line placement
+- Web platform has limited camera functionality
+- No persistent grading history storage yet
+
+## Future Enhancement Roadmap
+
+### Phase 1 (Current Priority)
+- **Automatic edge detection**: Detect card physical boundaries using ML/OpenCV
+- **Print border detection**: Detect artwork/border boundaries
+- **Manual edge adjustment**: Allow user to drag/slide detected lines to correct boundaries
+  - 4 draggable lines for outer card edges
+  - 4 draggable lines for inner print border edges
+  - Lines should snap or guide to detected edges initially
+  - Real-time centering calculation as lines are adjusted
+- **Centering calculation**: Automatic top/bottom/left/right measurements
+- **Grade prediction**: Show centering-based grade
+
+### Phase 2 (Future)
+- **Corner damage detection**: Automatic detection of corner wear
+- **Edge damage detection**: Detect whitening, chipping, or wear on card edges
+- **Surface scuff detection**: Identify scratches, dents, or surface imperfections
+
+### Phase 3 (Long-term)
+- Export grading reports as PDF
+- Cloud storage and grading history
+- Card value database integration
+- Multi-card batch grading
+- Authentication/fake card detection
+
+## Code Style Preferences
+- Prefer functional components over class components
+- Use arrow functions for component definitions
+- Keep utility functions pure and side-effect free
+- Extract complex calculations to utility files
+- Use TypeScript types over interfaces where appropriate
+- Comment complex algorithms and calculations
+- Keep components focused and single-purpose
+
+## Testing Notes
+- Test on physical devices when possible (camera features)
+- iOS and Android may have different camera behaviors
+- OpenCV features require native modules (no web support)
+- Test with various card sizes and lighting conditions
+
+## Performance Considerations
+- Camera frame processing can be CPU intensive
+- Resize images before processing to improve performance
+- Use Reanimated for 60fps animations
+- Minimize re-renders when dragging lines
+- Consider worklets for frame processing
+
+## Platform-Specific Notes
+- iOS: Requires camera permissions in Info.plist
+- Android: Requires camera permissions in AndroidManifest.xml
+- Expo Go has limitations with some native modules
+- Development builds required for full OpenCV support
+
+## Success Criteria for Centering Feature
+
+### Minimum Viable Product (MVP)
+1. User can scan a TCG card with the camera
+2. App automatically detects the 4 physical card edges (best effort)
+3. App automatically detects the 4 printed border edges (best effort)
+4. **User can manually adjust all 8 edge lines** by dragging/sliding them
+   - Outer edges (4 lines): top, bottom, left, right of physical card
+   - Inner edges (4 lines): top, bottom, left, right of printed border/artwork
+   - Lines update in real-time as user drags
+   - Centering calculations update live as lines move
+5. App calculates and displays:
+   - Top margin size (in pixels or mm)
+   - Bottom margin size
+   - Left margin size
+   - Right margin size
+   - Vertical centering ratio (e.g., "55/45")
+   - Horizontal centering ratio (e.g., "52/48")
+6. App shows predicted grade based on centering alone
+
+### Ideal Experience
+- Real-time detection as user positions the card
+- Visual overlay showing detected edges (green lines for detected edges)
+- Haptic feedback when card is properly detected
+- **Smooth, responsive manual line adjustment**
+  - Lines are easily draggable with touch/gesture
+  - Visual feedback while dragging (e.g., line highlights, measurements update)
+  - Snap-to-edge suggestions (but user can override)
+  - Undo/reset to auto-detected positions
+- Live centering calculation updates as lines are dragged
+- Save card photos with centering data and line positions
+- Compare multiple cards side-by-side
+
+### Card Types to Support
+- Standard TCG cards (2.5" x 3.5")
+- Pokemon, Magic: The Gathering, Yu-Gi-Oh, Sports cards
+- Both modern and vintage cards
+- Holographic and non-holographic finishes
+- Various lighting conditions
+
+## UI/UX Design for Edge Detection Lines
+
+### Two Sets of Boundary Lines
+The centering feature requires **8 draggable lines total**:
+
+**Outer Boundaries (Physical Card Edges)** - 4 lines
+- Top edge line (horizontal)
+- Bottom edge line (horizontal)
+- Left edge line (vertical)
+- Right edge line (vertical)
+- Color suggestion: Blue or similar to distinguish from inner lines
+
+**Inner Boundaries (Printed Border/Artwork)** - 4 lines
+- Top border line (horizontal)
+- Bottom border line (horizontal)
+- Left border line (vertical)
+- Right border line (vertical)
+- Color suggestion: Yellow/Gold to contrast with outer lines
+
+### Line Interaction
+- Lines should be draggable with pan gesture
+- Touch target should be generous (easy to grab)
+- Visual feedback when line is being dragged (e.g., thicker, highlighted)
+- Measurements update in real-time as lines move
+- Display margin sizes near each edge (e.g., "Top: 3.2mm")
+- Display centering ratios prominently (e.g., "55/45" for top/bottom)
+
+### Reference: Existing DraggableLines Component
+The app already has `DraggableLines.tsx` for corner wear measurement with 8 lines (2 per corner). This component can serve as a reference or be adapted for the centering feature, which also needs 8 lines but arranged differently (4 horizontal + 4 vertical for edges vs 4 corners with 2 lines each).

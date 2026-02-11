@@ -1,140 +1,69 @@
-import { CornerBoundaries, CardDimensions, CornerMeasurement } from '../types/measurements';
-import { CornerWearPercentages } from '../types/grading';
+import { BorderBoundaries, CardDimensions } from '../types/measurements';
 
 /**
- * Calculate corner wear percentages based on draggable line positions
- * Each corner has 2 lines that mark the start and end of corner wear
+ * Initialize border boundaries based on detected card edges
+ * Places outer border outside card edges and inner border inside
  */
-export function calculateCornerWearPercentages(
-  boundaries: CornerBoundaries,
+export function initializeBorderBoundaries(
+  cardDimensions: CardDimensions,
+  imageWidth: number,
+  imageHeight: number,
+  outerBorderOffset: number = 30,
+  innerBorderOffset: number = 20
+): BorderBoundaries {
+  // Calculate outer boundaries constrained to image dimensions
+  const outer = {
+    top: Math.max(0, cardDimensions.topEdge - outerBorderOffset),
+    bottom: Math.min(imageHeight, cardDimensions.bottomEdge + outerBorderOffset),
+    left: Math.max(0, cardDimensions.leftEdge - outerBorderOffset),
+    right: Math.min(imageWidth, cardDimensions.rightEdge + outerBorderOffset),
+  };
+
+  // Calculate inner boundaries constrained to both image dimensions and outer boundaries
+  const inner = {
+    top: Math.max(outer.top + 1, Math.min(cardDimensions.topEdge + innerBorderOffset, imageHeight - 1)),
+    bottom: Math.min(outer.bottom - 1, Math.max(cardDimensions.bottomEdge - innerBorderOffset, 1)),
+    left: Math.max(outer.left + 1, Math.min(cardDimensions.leftEdge + innerBorderOffset, imageWidth - 1)),
+    right: Math.min(outer.right - 1, Math.max(cardDimensions.rightEdge + innerBorderOffset, 1)),
+  };
+
+  return {
+    outer,
+    inner,
+  };
+}
+
+/**
+ * Calculate border wear based on the outer and inner border positions
+ * Returns a single wear percentage based on average border quality
+ */
+export function calculateBorderWear(
+  boundaries: BorderBoundaries,
   cardDimensions: CardDimensions
-): CornerWearPercentages {
-  // Calculate wear for each corner
-  const topLeftWear = calculateSingleCornerWear(
-    boundaries.topLeft,
-    cardDimensions,
-    'topLeft'
-  );
-  
-  const topRightWear = calculateSingleCornerWear(
-    boundaries.topRight,
-    cardDimensions,
-    'topRight'
-  );
-  
-  const bottomLeftWear = calculateSingleCornerWear(
-    boundaries.bottomLeft,
-    cardDimensions,
-    'bottomLeft'
-  );
-  
-  const bottomRightWear = calculateSingleCornerWear(
-    boundaries.bottomRight,
-    cardDimensions,
-    'bottomRight'
-  );
+): number {
+  // Calculate border widths for each side
+  const topBorderWidth = boundaries.inner.top - boundaries.outer.top;
+  const bottomBorderWidth = boundaries.outer.bottom - boundaries.inner.bottom;
+  const leftBorderWidth = boundaries.inner.left - boundaries.outer.left;
+  const rightBorderWidth = boundaries.outer.right - boundaries.inner.right;
 
+  // Calculate wear percentages based on border width
+  // Larger border = more wear on the card edge
+  const referenceSize = Math.min(cardDimensions.width, cardDimensions.height);
+  
+  const topWearPercent = (topBorderWidth / referenceSize) * 100;
+  const bottomWearPercent = (bottomBorderWidth / referenceSize) * 100;
+  const leftWearPercent = (leftBorderWidth / referenceSize) * 100;
+  const rightWearPercent = (rightBorderWidth / referenceSize) * 100;
+
+  // Calculate maximum wear across all sides (worst case)
   const maxWear = Math.max(
-    topLeftWear.wearPercentage,
-    topRightWear.wearPercentage,
-    bottomLeftWear.wearPercentage,
-    bottomRightWear.wearPercentage
+    topWearPercent,
+    bottomWearPercent,
+    leftWearPercent,
+    rightWearPercent
   );
 
-  return {
-    topLeft: topLeftWear.wearPercentage,
-    topRight: topRightWear.wearPercentage,
-    bottomLeft: bottomLeftWear.wearPercentage,
-    bottomRight: bottomRightWear.wearPercentage,
-    maxWear,
-  };
-}
-
-/**
- * Calculate wear percentage for a single corner
- * Average the wear on both edges (horizontal and vertical) of the corner
- */
-function calculateSingleCornerWear(
-  corner: { horizontal: number; vertical: number },
-  cardDimensions: CardDimensions,
-  position: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight'
-): CornerMeasurement {
-  let horizontalWear = 0;
-  let verticalWear = 0;
-
-  switch (position) {
-    case 'topLeft':
-      // Horizontal: distance from top edge to horizontal line
-      horizontalWear = corner.horizontal - cardDimensions.topEdge;
-      // Vertical: distance from left edge to vertical line
-      verticalWear = corner.vertical - cardDimensions.leftEdge;
-      break;
-    
-    case 'topRight':
-      // Horizontal: distance from top edge to horizontal line
-      horizontalWear = corner.horizontal - cardDimensions.topEdge;
-      // Vertical: distance from vertical line to right edge
-      verticalWear = cardDimensions.rightEdge - corner.vertical;
-      break;
-    
-    case 'bottomLeft':
-      // Horizontal: distance from horizontal line to bottom edge
-      horizontalWear = cardDimensions.bottomEdge - corner.horizontal;
-      // Vertical: distance from left edge to vertical line
-      verticalWear = corner.vertical - cardDimensions.leftEdge;
-      break;
-    
-    case 'bottomRight':
-      // Horizontal: distance from horizontal line to bottom edge
-      horizontalWear = cardDimensions.bottomEdge - corner.horizontal;
-      // Vertical: distance from vertical line to right edge
-      verticalWear = cardDimensions.rightEdge - corner.vertical;
-      break;
-  }
-
-  // Calculate percentage based on card dimensions
-  const horizontalPercent = (horizontalWear / cardDimensions.height) * 100;
-  const verticalPercent = (verticalWear / cardDimensions.width) * 100;
-
-  // Average the two wear measurements
-  const averageWear = (horizontalPercent + verticalPercent) / 2;
-  const wearPercentage = Math.max(0, Math.min(100, averageWear)); // Clamp between 0-100
-
-  return {
-    corner: position,
-    wearLength: (horizontalWear + verticalWear) / 2,
-    edgeLength: (cardDimensions.width + cardDimensions.height) / 2,
-    wearPercentage,
-  };
-}
-
-/**
- * Initialize corner boundaries based on detected card edges
- * Places boundaries at estimated corner positions (small default wear)
- */
-export function initializeCornerBoundaries(
-  cardDimensions: CardDimensions,
-  defaultWearPercent: number = 2
-): CornerBoundaries {
-  const defaultWearPixels = (cardDimensions.width * defaultWearPercent) / 100;
-
-  return {
-    topLeft: {
-      horizontal: cardDimensions.topEdge + defaultWearPixels,
-      vertical: cardDimensions.leftEdge + defaultWearPixels,
-    },
-    topRight: {
-      horizontal: cardDimensions.topEdge + defaultWearPixels,
-      vertical: cardDimensions.rightEdge - defaultWearPixels,
-    },
-    bottomLeft: {
-      horizontal: cardDimensions.bottomEdge - defaultWearPixels,
-      vertical: cardDimensions.leftEdge + defaultWearPixels,
-    },
-    bottomRight: {
-      horizontal: cardDimensions.bottomEdge - defaultWearPixels,
-      vertical: cardDimensions.rightEdge - defaultWearPixels,
-    },
-  };
+  return Math.max(0, Math.min(100, maxWear));
 }
 

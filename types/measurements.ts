@@ -8,6 +8,23 @@ export interface Line {
   end: Point;
 }
 
+// New border-based structure
+export interface BorderBoundaries {
+  outer: {
+    top: number;    // Y position
+    bottom: number; // Y position
+    left: number;   // X position
+    right: number;  // X position
+  };
+  inner: {
+    top: number;    // Y position
+    bottom: number; // Y position
+    left: number;   // X position
+    right: number;  // X position
+  };
+}
+
+// Legacy corner-based structure (kept for backward compatibility)
 export interface CornerBoundaries {
   topLeft: {
     horizontal: number; // Y position of horizontal line
@@ -41,5 +58,10 @@ export interface CornerMeasurement {
   wearLength: number;
   edgeLength: number;
   wearPercentage: number;
+}
+
+export interface CenteringMeasurements {
+  leftRight: { left: number; right: number };
+  topBottom: { top: number; bottom: number };
 }
 
