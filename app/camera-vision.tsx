@@ -4,6 +4,7 @@ import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 
 import { useRouter } from 'expo-router';
 import { Button, IconButton } from 'react-native-paper';
 import { useSharedValue } from 'react-native-reanimated';
+import { Worklets } from 'react-native-worklets-core';
 import { useResizePlugin } from 'vision-camera-resize-plugin';
 import CameraOverlay from '../components/CameraOverlay';
 import { detectCard, CornerSmoother, type CardCorners } from '../utils/cardDetectionProcessor';
@@ -15,6 +16,8 @@ export default function CameraScreen() {
   const [cardDetected, setCardDetected] = useState(false);
   const [detectedCardCorners, setDetectedCardCorners] = useState<CardCorners | null>(null);
   const [showLevelIndicators, setShowLevelIndicators] = useState(true);
+  const [debugImage, setDebugImage] = useState<string | null>(null);
+  const [showDebugView, setShowDebugView] = useState(false);
   const cameraRef = useRef<Camera>(null);
   const router = useRouter();
   const cornerSmootherRef = useRef(new CornerSmoother());
@@ -30,58 +33,57 @@ export default function CameraScreen() {
   const DETECTION_THRESHOLD = 3; // Show overlay after 3 consecutive detections
   const MISS_THRESHOLD = 5; // Hide overlay after 5 consecutive misses
 
-  // State for testing dummy overlay (React state is fine since we're not using it in worklets)
-  const [showDummyOverlay, setShowDummyOverlay] = useState(true);
+  // Helper functions for worklet to call (must be defined outside frame processor)
+  const updateDetectedCorners = Worklets.createRunOnJS((corners: CardCorners, frameWidth: number, frameHeight: number) => {
+    const smoothed = cornerSmootherRef.current.addCorners(corners);
+    setDetectedCardCorners(smoothed);
+    setCardDetected(true);
 
-  // DUMMY MODE: Simulate card detection with a timer
-  // This bypasses the frame processor entirely to test the visualization pipeline
-  useEffect(() => {
-    if (!showDummyOverlay) {
-      setDetectedCardCorners(null);
-      setCardDetected(false);
-      return;
-    }
+    // Log coordinate transformation info for debugging
+    console.log(`[Camera] Frame dimensions: ${frameWidth}×${frameHeight}`);
+    console.log(`[Camera] Screen dimensions: ${require('react-native').Dimensions.get('window').width}×${require('react-native').Dimensions.get('window').height}`);
+    console.log(`[Camera] Aspect ratio - Frame: ${(frameHeight/frameWidth).toFixed(2)}, Screen: ${(require('react-native').Dimensions.get('window').height / require('react-native').Dimensions.get('window').width).toFixed(2)}`);
+  });
 
-    // Generate dummy corners after a short delay (simulating detection threshold)
-    const timer = setTimeout(() => {
-      const centerX = 0.5;
-      const centerY = 0.5;
-      const width = 0.5;
-      const frameAspect = 0.56;
-      const height = width * 1.4 * frameAspect;
-
-      const left = centerX - width / 2;
-      const right = centerX + width / 2;
-      const top = centerY - height / 2;
-      const bottom = centerY + height / 2;
-
-      const dummyCorners: CardCorners = {
-        topLeft: { x: left, y: top },
-        topRight: { x: right, y: top },
-        bottomRight: { x: right, y: bottom },
-        bottomLeft: { x: left, y: bottom },
-      };
-
-      setDetectedCardCorners(dummyCorners);
-      setCardDetected(true);
-    }, 500); // 500ms delay to simulate confidence threshold
-
-    return () => clearTimeout(timer);
-  }, [showDummyOverlay]);
+  const clearDetection = Worklets.createRunOnJS(() => {
+    cornerSmootherRef.current.reset();
+    setDetectedCardCorners(null);
+    setCardDetected(false);
+  });
 
   // Frame processor for real-time card detection
-  // Currently DISABLED for dummy mode - using timer instead to avoid worklet complexity
-  // TODO: Re-enable once OpenCV integration is ready
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet';
 
-    // Throttle detection to every Nth frame
+    // Throttle detection to every 5th frame
     frameCount.value++;
     if (frameCount.value % DETECTION_INTERVAL !== 0) {
       return;
     }
 
-    // Empty for now - dummy mode uses timer-based updates instead
+    // Run OpenCV card detection
+    const corners = detectCard(frame, resize);
+
+    if (corners) {
+      // Card detected
+      consecutiveDetections.value++;
+      consecutiveMisses.value = 0;
+
+      // Only update UI after crossing threshold
+      if (consecutiveDetections.value >= DETECTION_THRESHOLD) {
+        // Apply smoothing and update React state
+        updateDetectedCorners(corners, frame.width, frame.height);
+      }
+    } else {
+      // No card detected
+      consecutiveMisses.value++;
+      consecutiveDetections.value = 0;
+
+      // Only hide overlay after crossing threshold
+      if (consecutiveMisses.value >= MISS_THRESHOLD) {
+        clearDetection();
+      }
+    }
   }, []);
 
   // Request camera permission on mount if not granted
@@ -199,15 +201,7 @@ export default function CameraScreen() {
             ]} />
           </TouchableOpacity>
 
-          <View style={styles.testToggleButton}>
-            <IconButton
-              icon={showDummyOverlay ? "eye" : "eye-off"}
-              iconColor="#fff"
-              size={32}
-              onPress={() => setShowDummyOverlay(!showDummyOverlay)}
-              style={{ margin: 0 }}
-            />
-          </View>
+          <View style={styles.spacer} />
       </View>
 
       <View style={styles.instructionContainer}>
@@ -258,16 +252,6 @@ const styles = StyleSheet.create({
     width: 60,
   },
   levelToggleButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
-  },
-  testToggleButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
