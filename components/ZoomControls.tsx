@@ -8,9 +8,6 @@ interface ZoomControlsProps {
   translateX?: number;
   translateY?: number;
   onReset?: () => void;
-  rotateX?: number;
-  rotateY?: number;
-  rotateZ?: number;
 }
 
 export default function ZoomControls({
@@ -18,17 +15,11 @@ export default function ZoomControls({
   translateX = 0,
   translateY = 0,
   onReset,
-  rotateX = 0,
-  rotateY = 0,
-  rotateZ = 0,
 }: ZoomControlsProps) {
   const hasTransformations =
     zoomLevel !== 1.00 ||
     translateX !== 0 ||
-    translateY !== 0 ||
-    rotateX !== 0 ||
-    rotateY !== 0 ||
-    rotateZ !== 0;
+    translateY !== 0
 
   const showResetButton = hasTransformations;
 

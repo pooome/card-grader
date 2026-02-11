@@ -267,9 +267,6 @@ export default function AnalysisScreen() {
 
   const handleZoomReset = () => {
     zoomableImageRef.current?.resetZoom();
-    setRotateX(0);
-    setRotateY(0);
-    setRotateZ(0);
   };
 
   const handleToggleAdvanced = () => {
@@ -482,9 +479,6 @@ export default function AnalysisScreen() {
               translateX={translateX}
               translateY={translateY}
               onReset={handleZoomReset}
-              rotateX={rotateX}
-              rotateY={rotateY}
-              rotateZ={rotateZ}
             />
 
             {/* Advanced Toggle - Always visible on right side */}
