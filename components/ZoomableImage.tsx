@@ -1,4 +1,4 @@
-import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, runOnJS } from 'react-native-reanimated';
@@ -10,6 +10,9 @@ interface ZoomableImageProps {
   onTransformChange?: (scale: number, translateX: number, translateY: number) => void;
   children?: React.ReactNode;
   isLinesDragging?: boolean;
+  rotateX?: number;
+  rotateY?: number;
+  rotateZ?: number;
 }
 
 export interface ZoomableImageRef {
@@ -27,16 +30,29 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
     onTransformChange,
     children,
     isLinesDragging = false,
+    rotateX: rotateXProp,
+    rotateY: rotateYProp,
+    rotateZ: rotateZProp,
   },
   ref
 ) => {
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const rotateX = useSharedValue(0);
+  const rotateY = useSharedValue(0);
+  const rotateZ = useSharedValue(0);
 
   const savedScale = useSharedValue(1);
   const startTranslateX = useSharedValue(0);
   const startTranslateY = useSharedValue(0);
+
+  // Sync rotation props to shared values
+  useEffect(() => {
+    rotateX.value = rotateXProp ?? 0;
+    rotateY.value = rotateYProp ?? 0;
+    rotateZ.value = rotateZProp ?? 0;
+  }, [rotateXProp, rotateYProp, rotateZProp]);
 
   // Expose reset method to parent
   useImperativeHandle(ref, () => ({
@@ -44,6 +60,9 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
       scale.value = 1;
       translateX.value = 0;
       translateY.value = 0;
+      rotateX.value = 0;
+      rotateY.value = 0;
+      rotateZ.value = 0;
       savedScale.value = 1;
       startTranslateX.value = 0;
       startTranslateY.value = 0;
@@ -95,9 +114,13 @@ const ZoomableImage = forwardRef<ZoomableImageRef, ZoomableImageProps>((
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
+        { perspective: 1000 },
         { translateX: translateX.value },
         { translateY: translateY.value },
         { scale: scale.value },
+        { rotateX: `${rotateX.value}deg` },
+        { rotateY: `${rotateY.value}deg` },
+        { rotateZ: `${rotateZ.value}deg` },
       ],
     };
   });

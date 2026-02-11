@@ -14,14 +14,16 @@ export default function CardSideToggle({ cardSide, onToggle }: CardSideTogglePro
         <Text style={[styles.label, cardSide === 'front' && styles.labelActive]}>
           FRONT
         </Text>
-        <Switch
-          value={cardSide === 'back'}
-          onValueChange={onToggle}
-          trackColor={{ false: '#4caf50', true: '#2196f3' }}
-          thumbColor="#fff"
-          ios_backgroundColor="#4caf50"
-          style={styles.switch}
-        />
+        <View style={styles.switchContainer}>
+          <Switch
+            value={cardSide === 'back'}
+            onValueChange={onToggle}
+            trackColor={{ false: '#4caf50', true: '#2196f3' }}
+            thumbColor="#fff"
+            ios_backgroundColor="#4caf50"
+            style={styles.switch}
+          />
+        </View>
         <Text style={[styles.label, cardSide === 'back' && styles.labelActive]}>
           BACK
         </Text>
@@ -34,21 +36,22 @@ const styles = StyleSheet.create({
   safeArea: {
     position: 'absolute',
     bottom: 0,
-    right: 0,
+    right: 48,
     zIndex: 100,
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 12,
-    marginBottom: 12,
+    paddingHorizontal: 10,
+    marginRight: 0,
+    marginBottom: 8,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.15)',
-    gap: 8,
+    gap: 6,
+    height: 32,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -62,16 +65,20 @@ const styles = StyleSheet.create({
     }),
   },
   label: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     color: 'rgba(255, 255, 255, 0.5)',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
   labelActive: {
     color: '#fff',
   },
+  switchContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   switch: {
-    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+    transform: [{ scaleX: 0.7 }, { scaleY: 0.7 }],
   },
 });
 

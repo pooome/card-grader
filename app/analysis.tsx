@@ -14,6 +14,8 @@ import AnalysisHeader from '../components/AnalysisHeader';
 import ZoomableImage, { ZoomableImageRef } from '../components/ZoomableImage';
 import ZoomControls from '../components/ZoomControls';
 import CardSideToggle from '../components/CardSideToggle';
+import RotationControls from '../components/RotationControls';
+import AdvancedToggle from '../components/AdvancedToggle';
 import { BorderBoundaries, CardDimensions, CenteringMeasurements } from '../types/measurements';
 import { GradingResult } from '../types/grading';
 import { estimateCardDimensions } from '../utils/imageProcessing';
@@ -103,6 +105,10 @@ export default function AnalysisScreen() {
   const [isLinesDragging, setIsLinesDragging] = useState(false);
   const [cardSide, setCardSide] = useState<'front' | 'back'>('front');
   const [recentPhotos, setRecentPhotos] = useState<MediaLibrary.AssetInfo[]>([]);
+  const [advancedControlsEnabled, setAdvancedControlsEnabled] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [rotateZ, setRotateZ] = useState(0);
   
   // Settings
   const { settings, updateSettings } = useSettings();
@@ -261,6 +267,25 @@ export default function AnalysisScreen() {
 
   const handleZoomReset = () => {
     zoomableImageRef.current?.resetZoom();
+    setRotateX(0);
+    setRotateY(0);
+    setRotateZ(0);
+  };
+
+  const handleToggleAdvanced = () => {
+    setAdvancedControlsEnabled(!advancedControlsEnabled);
+  };
+
+  const handleRotationChange = (axis: 'X' | 'Y' | 'Z', value: number) => {
+    if (axis === 'X') setRotateX(value);
+    else if (axis === 'Y') setRotateY(value);
+    else if (axis === 'Z') setRotateZ(value);
+  };
+
+  const handleResetAxis = (axis: 'X' | 'Y' | 'Z') => {
+    if (axis === 'X') setRotateX(0);
+    else if (axis === 'Y') setRotateY(0);
+    else if (axis === 'Z') setRotateZ(0);
   };
 
   // Show empty state with buttons when no image is loaded
@@ -280,6 +305,17 @@ export default function AnalysisScreen() {
             onMenu={handleMenu}
           />
         </SafeAreaView>
+      )}
+
+      {/* Rotation Controls - Only show when advanced mode is enabled */}
+      {!showEmptyState && advancedControlsEnabled && (
+        <RotationControls
+          rotateX={rotateX}
+          rotateY={rotateY}
+          rotateZ={rotateZ}
+          onRotationChange={handleRotationChange}
+          onResetAxis={handleResetAxis}
+        />
       )}
 
       {showEmptyState ? (
@@ -419,6 +455,9 @@ export default function AnalysisScreen() {
               imageHeight={imageSize.height}
               onTransformChange={handleTransformChange}
               isLinesDragging={isLinesDragging}
+              rotateX={rotateX}
+              rotateY={rotateY}
+              rotateZ={rotateZ}
             >
               <DraggableLines
                 boundaries={boundaries!}
@@ -438,10 +477,19 @@ export default function AnalysisScreen() {
             translateX={translateX}
             translateY={translateY}
             onReset={handleZoomReset}
+            rotateX={rotateX}
+            rotateY={rotateY}
+            rotateZ={rotateZ}
           />
-          
+
+          {/* Advanced Toggle - Always visible on right side */}
+          <AdvancedToggle
+            advancedControlsEnabled={advancedControlsEnabled}
+            onToggle={handleToggleAdvanced}
+          />
+
           {/* Card Side Toggle */}
-          <CardSideToggle 
+          <CardSideToggle
             cardSide={cardSide}
             onToggle={() => setCardSide(cardSide === 'front' ? 'back' : 'front')}
           />

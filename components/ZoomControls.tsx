@@ -8,10 +8,29 @@ interface ZoomControlsProps {
   translateX?: number;
   translateY?: number;
   onReset?: () => void;
+  rotateX?: number;
+  rotateY?: number;
+  rotateZ?: number;
 }
 
-export default function ZoomControls({ zoomLevel, translateX = 0, translateY = 0, onReset }: ZoomControlsProps) {
-  const showResetButton = zoomLevel !== 1.00 || translateX !== 0 || translateY !== 0;
+export default function ZoomControls({
+  zoomLevel,
+  translateX = 0,
+  translateY = 0,
+  onReset,
+  rotateX = 0,
+  rotateY = 0,
+  rotateZ = 0,
+}: ZoomControlsProps) {
+  const hasTransformations =
+    zoomLevel !== 1.00 ||
+    translateX !== 0 ||
+    translateY !== 0 ||
+    rotateX !== 0 ||
+    rotateY !== 0 ||
+    rotateZ !== 0;
+
+  const showResetButton = hasTransformations;
 
   return (
     <SafeAreaView edges={['bottom', 'left']} style={styles.safeArea}>
@@ -52,8 +71,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: 12,
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: 8,
+    gap: 6,
   },
   container: {
     flexDirection: 'row',
