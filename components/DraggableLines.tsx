@@ -33,10 +33,51 @@ export default function DraggableLines({
   const triggerHapticIfNeeded = (newX: number, newY: number) => {
     const dx = Math.abs(newX - lastHapticPosition.current.x);
     const dy = Math.abs(newY - lastHapticPosition.current.y);
-    
+
     if (dx >= HAPTIC_THRESHOLD || dy >= HAPTIC_THRESHOLD) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       lastHapticPosition.current = { x: newX, y: newY };
+    }
+  };
+
+  const createArrowPath = (
+    centerX: number,
+    centerY: number,
+    direction: 'up' | 'down' | 'left' | 'right'
+  ) => {
+    const arrowHeadSize = 5;
+    // Offset the arrow tip slightly so the visual center of the V-shape is at the geometric center
+    const visualOffset = arrowHeadSize / 3;
+
+    switch (direction) {
+      case 'up':
+        // Arrow pointing up - shift up so visual center is at centerY
+        return `
+          M ${centerX - arrowHeadSize},${centerY + visualOffset}
+          L ${centerX},${centerY - arrowHeadSize + visualOffset}
+          L ${centerX + arrowHeadSize},${centerY + visualOffset}
+        `;
+      case 'down':
+        // Arrow pointing down - shift down so visual center is at centerY
+        return `
+          M ${centerX - arrowHeadSize},${centerY - visualOffset}
+          L ${centerX},${centerY + arrowHeadSize - visualOffset}
+          L ${centerX + arrowHeadSize},${centerY - visualOffset}
+        `;
+      case 'left':
+        // Arrow pointing left - shift left so visual center is at centerX
+        return `
+          M ${centerX + visualOffset},${centerY - arrowHeadSize}
+          L ${centerX - arrowHeadSize + visualOffset},${centerY}
+          L ${centerX + visualOffset},${centerY + arrowHeadSize}
+        `;
+      case 'right':
+        // Arrow pointing right - shift right so visual center is at centerX
+        return `
+          M ${centerX - visualOffset},${centerY - arrowHeadSize}
+          L ${centerX + arrowHeadSize - visualOffset},${centerY}
+          L ${centerX - visualOffset},${centerY + arrowHeadSize}
+        `;
     }
   };
 
@@ -141,7 +182,7 @@ export default function DraggableLines({
     const isActive = activeHandle === id;
     const color = '#A020F0';
     const notchWidth = 40;
-    const notchLength = 10;
+    const notchLength = 15;
     const cornerRadius = 8;
     // Minimum touch target size (48x48 for Android, 44x44 for iOS - using 48 for safety)
     const minTouchSize = 48;
@@ -269,6 +310,55 @@ export default function DraggableLines({
         break;
     }
 
+    // Calculate center of notch
+    let arrowCenterX = 0;
+    let arrowCenterY = 0;
+
+    switch (direction) {
+      case 'up':
+        arrowCenterX = x;
+        arrowCenterY = y - notchLength / 2;
+        break;
+      case 'down':
+        arrowCenterX = x;
+        arrowCenterY = y + notchLength / 2;
+        break;
+      case 'left':
+        arrowCenterX = x - notchLength / 2;
+        arrowCenterY = y;
+        break;
+      case 'right':
+        arrowCenterX = x + notchLength / 2;
+        arrowCenterY = y;
+        break;
+    }
+
+    // Determine arrow direction based on borderType and side
+    // Inner borders: arrows point inward (toward card center)
+    // Outer borders: arrows point outward (away from card)
+    let arrowDirection: 'up' | 'down' | 'left' | 'right';
+
+    if (borderType === 'inner') {
+      // Inner notches: arrow points toward card center
+      switch (direction) {
+        case 'up': arrowDirection = 'up'; break; // Inner bottom - arrow points up
+        case 'down': arrowDirection = 'down'; break; // Inner top - arrow points down
+        case 'left': arrowDirection = 'left'; break; // Inner right - arrow points left
+        case 'right': arrowDirection = 'right'; break; // Inner left - arrow points right
+      }
+    } else {
+      // Outer notches: arrow points away from card
+      switch (direction) {
+        case 'up': arrowDirection = 'down'; break; // Outer bottom - arrow points down
+        case 'down': arrowDirection = 'up'; break; // Outer top - arrow points up
+        case 'left': arrowDirection = 'right'; break; // Outer right - arrow points right
+        case 'right': arrowDirection = 'left'; break; // Outer left - arrow points left
+      }
+    }
+
+    const arrowPath = createArrowPath(arrowCenterX, arrowCenterY, arrowDirection);
+    const arrowStrokeWidth = 2;
+
     return (
       <G key={id}>
         {/* Invisible expanded touch area */}
@@ -286,7 +376,18 @@ export default function DraggableLines({
           fill={color}
           opacity={isActive ? 0.9 : 0.4}
           stroke={color}
-          strokeWidth={isActive ? 1.5 : 0.5}
+          strokeWidth={1}
+          pointerEvents="none"
+        />
+        {/* Arrow icon - arrowhead only */}
+        <Path
+          d={arrowPath}
+          stroke="white"
+          strokeWidth={arrowStrokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          opacity={isActive ? 1 : 0.7}
           pointerEvents="none"
         />
       </G>
@@ -446,18 +547,18 @@ export default function DraggableLines({
           opacity={0.9}
         />
 
-        {/* Draggable notch handles - one per line, positioned at 50% */}
+        {/* Draggable notch handles - staggered positions to avoid overlap */}
         {/* Outer border notches - extend inward toward card center */}
-        {renderNotch('outer-top', (outer.left + outer.right) / 2, outer.top, 'down', 'outer', 'top')}
-        {renderNotch('outer-bottom', (outer.left + outer.right) / 2, outer.bottom, 'up', 'outer', 'bottom')}
-        {renderNotch('outer-left', outer.left, (outer.top + outer.bottom) / 2, 'right', 'outer', 'left')}
-        {renderNotch('outer-right', outer.right, (outer.top + outer.bottom) / 2, 'left', 'outer', 'right')}
+        {renderNotch('outer-top', (outer.left + outer.right) / 2 - 50, outer.top, 'down', 'outer', 'top')}
+        {renderNotch('outer-bottom', (outer.left + outer.right) / 2 - 50, outer.bottom, 'up', 'outer', 'bottom')}
+        {renderNotch('outer-left', outer.left, (outer.top + outer.bottom) / 2 - 50, 'right', 'outer', 'left')}
+        {renderNotch('outer-right', outer.right, (outer.top + outer.bottom) / 2 - 50, 'left', 'outer', 'right')}
 
-        {/* Inner border notches - extend inward toward card center */}
-        {renderNotch('inner-top', (inner.left + inner.right) / 2, inner.top, 'down', 'inner', 'top')}
-        {renderNotch('inner-bottom', (inner.left + inner.right) / 2, inner.bottom, 'up', 'inner', 'bottom')}
-        {renderNotch('inner-left', inner.left, (inner.top + inner.bottom) / 2, 'right', 'inner', 'left')}
-        {renderNotch('inner-right', inner.right, (inner.top + inner.bottom) / 2, 'left', 'inner', 'right')}
+        {/* Inner border notches - staggered to avoid overlap with outer notches */}
+        {renderNotch('inner-top', (inner.left + inner.right) / 2 + 50, inner.top, 'down', 'inner', 'top')}
+        {renderNotch('inner-bottom', (inner.left + inner.right) / 2 + 50, inner.bottom, 'up', 'inner', 'bottom')}
+        {renderNotch('inner-left', inner.left, (inner.top + inner.bottom) / 2 + 50, 'right', 'inner', 'left')}
+        {renderNotch('inner-right', inner.right, (inner.top + inner.bottom) / 2 + 50, 'left', 'inner', 'right')}
         </G>
       </Svg>
     </View>
