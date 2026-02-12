@@ -15,6 +15,7 @@ export default function CameraScreen() {
   const [cardDetected, setCardDetected] = useState(false);
   const [detectedCardCorners, setDetectedCardCorners] = useState<CardCorners | null>(null);
   const [showLevelIndicators, setShowLevelIndicators] = useState(true);
+  const [flashEnabled, setFlashEnabled] = useState(false);
   const cameraRef = useRef<Camera>(null);
   const router = useRouter();
   const cornerSmootherRef = useRef(new CornerSmoother());
@@ -143,6 +144,7 @@ export default function CameraScreen() {
         device={device}
         isActive={true}
         photo={true}
+        torch={flashEnabled ? 'on' : 'off'}
         frameProcessor={frameProcessor}
       />
 
@@ -180,7 +182,15 @@ export default function CameraScreen() {
             ]} />
           </TouchableOpacity>
 
-          <View style={styles.spacer} />
+          <View style={styles.flashToggleButton}>
+            <IconButton
+              icon={flashEnabled ? "flash" : "flash-off"}
+              iconColor={flashEnabled ? "#ffc107" : "#fff"}
+              size={32}
+              onPress={() => setFlashEnabled(!flashEnabled)}
+              style={{ margin: 0 }}
+            />
+          </View>
       </View>
 
       <View style={styles.instructionContainer}>
@@ -231,6 +241,16 @@ const styles = StyleSheet.create({
     width: 60,
   },
   levelToggleButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  flashToggleButton: {
     width: 60,
     height: 60,
     borderRadius: 30,

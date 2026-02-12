@@ -2,15 +2,16 @@ import React from 'react';
 import { View, Text, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ColorPickerButton from './ColorPickerButton';
 
 interface ZoomControlsProps {
   zoomLevel: number;
   translateX?: number;
   translateY?: number;
   onReset?: () => void;
-  rotateX?: number;
-  rotateY?: number;
-  rotateZ?: number;
+  lineColor: string;
+  onColorPickerToggle: () => void;
+  colorPickerVisible: boolean;
 }
 
 export default function ZoomControls({
@@ -18,17 +19,14 @@ export default function ZoomControls({
   translateX = 0,
   translateY = 0,
   onReset,
-  rotateX = 0,
-  rotateY = 0,
-  rotateZ = 0,
+  lineColor,
+  onColorPickerToggle,
+  colorPickerVisible,
 }: ZoomControlsProps) {
   const hasTransformations =
     zoomLevel !== 1.00 ||
     translateX !== 0 ||
-    translateY !== 0 ||
-    rotateX !== 0 ||
-    rotateY !== 0 ||
-    rotateZ !== 0;
+    translateY !== 0
 
   const showResetButton = hasTransformations;
 
@@ -55,6 +53,11 @@ export default function ZoomControls({
             />
           </View>
         )}
+        <ColorPickerButton
+          lineColor={lineColor}
+          colorPickerVisible={colorPickerVisible}
+          onToggle={onColorPickerToggle}
+        />
       </View>
     </SafeAreaView>
   );

@@ -45,11 +45,25 @@ export function calculateGrade(
   // Find the appropriate grade based on centering
   // BOTH leftRight AND topBottom deviations must meet the threshold for the selected side
   let matchedGrade: GradeThreshold = standard.grades[standard.grades.length - 1]; // Default to lowest grade
-  
+
   for (const grade of standard.grades) {
-    // Card must meet BOTH horizontal AND vertical centering requirements for the selected side
-    if (leftRightDeviation <= grade[thresholdKey] && 
-        topBottomDeviation <= grade[thresholdKey]) {
+    const maxThreshold = grade[thresholdKey];
+    let meetsRequirement = false;
+
+    // Check for asymmetric centering (only applies to front side for 9.5 grades)
+    if (side === 'front' && grade.minCenteringDeviationFront !== undefined) {
+      // Asymmetric centering: ONE direction must be <= min, OTHER direction must be <= max
+      // Check both possible combinations
+      const minThreshold = grade.minCenteringDeviationFront;
+      const combo1 = leftRightDeviation <= minThreshold && topBottomDeviation <= maxThreshold;
+      const combo2 = topBottomDeviation <= minThreshold && leftRightDeviation <= maxThreshold;
+      meetsRequirement = combo1 || combo2;
+    } else {
+      // Symmetric centering: BOTH directions must be <= max
+      meetsRequirement = leftRightDeviation <= maxThreshold && topBottomDeviation <= maxThreshold;
+    }
+
+    if (meetsRequirement) {
       matchedGrade = grade;
       break;
     }

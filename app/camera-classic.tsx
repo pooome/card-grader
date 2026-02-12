@@ -10,6 +10,7 @@ export default function CameraClassicScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isLevel, setIsLevel] = useState(false);
   const [showLevelIndicators, setShowLevelIndicators] = useState(true);
+  const [flashEnabled, setFlashEnabled] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const router = useRouter();
 
@@ -61,11 +62,16 @@ export default function CameraClassicScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-        <CameraOverlay 
+      <CameraView
+        style={styles.camera}
+        facing={facing}
+        ref={cameraRef}
+        enableTorch={flashEnabled}
+      >
+        <CameraOverlay
           cardDetected={false}
           detectedCardCorners={null}
-          onLevelChange={handleLevelChange} 
+          onLevelChange={handleLevelChange}
           showLevelIndicators={showLevelIndicators}
         />
         
@@ -94,7 +100,15 @@ export default function CameraClassicScreen() {
             ]} />
           </TouchableOpacity>
 
-          <View style={styles.spacer} />
+          <View style={styles.flashToggleButton}>
+            <IconButton
+              icon={flashEnabled ? "flash" : "flash-off"}
+              iconColor={flashEnabled ? "#ffc107" : "#fff"}
+              size={32}
+              onPress={() => setFlashEnabled(!flashEnabled)}
+              style={{ margin: 0 }}
+            />
+          </View>
         </View>
 
         <View style={styles.instructionContainer}>
@@ -143,6 +157,16 @@ const styles = StyleSheet.create({
     width: 60,
   },
   levelToggleButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  flashToggleButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
