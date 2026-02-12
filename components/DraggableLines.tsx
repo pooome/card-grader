@@ -12,6 +12,7 @@ interface DraggableLinesProps {
   onBoundariesChange: (boundaries: BorderBoundaries) => void;
   onDraggingChange?: (isDragging: boolean) => void;
   scale?: number;
+  lineColor?: string;
 }
 
 type BorderSide = 'top' | 'bottom' | 'left' | 'right';
@@ -25,6 +26,7 @@ export default function DraggableLines({
   onBoundariesChange,
   onDraggingChange,
   scale = 1,
+  lineColor = '#A020F0',
 }: DraggableLinesProps) {
   const [activeHandle, setActiveHandle] = useState<string | null>(null);
   const lastHapticPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -180,7 +182,7 @@ export default function DraggableLines({
     side: BorderSide
   ) => {
     const isActive = activeHandle === id;
-    const color = '#A020F0';
+    const color = lineColor;
     const notchWidth = 40;
     const notchLength = 15;
     const cornerRadius = 8;
@@ -408,7 +410,7 @@ export default function DraggableLines({
           >
             <Path
               d="M-1,1 l2,-2 M0,10 l10,-10 M9,11 l2,-2"
-              stroke="#A020F0"
+              stroke={lineColor}
               strokeWidth="1"
             />
           </Pattern>
@@ -477,7 +479,7 @@ export default function DraggableLines({
           y1={outer.top}
           x2={outer.right}
           y2={outer.top}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -486,7 +488,7 @@ export default function DraggableLines({
           y1={outer.bottom}
           x2={outer.right}
           y2={outer.bottom}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -495,7 +497,7 @@ export default function DraggableLines({
           y1={outer.top}
           x2={outer.left}
           y2={outer.bottom}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -504,7 +506,7 @@ export default function DraggableLines({
           y1={outer.top}
           x2={outer.right}
           y2={outer.bottom}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -515,7 +517,7 @@ export default function DraggableLines({
           y1={inner.top}
           x2={inner.right}
           y2={inner.top}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -524,7 +526,7 @@ export default function DraggableLines({
           y1={inner.bottom}
           x2={inner.right}
           y2={inner.bottom}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -533,7 +535,7 @@ export default function DraggableLines({
           y1={inner.top}
           x2={inner.left}
           y2={inner.bottom}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />
@@ -542,7 +544,7 @@ export default function DraggableLines({
           y1={inner.top}
           x2={inner.right}
           y2={inner.bottom}
-          stroke="#A020F0"
+          stroke={lineColor}
           strokeWidth={0.5}
           opacity={0.9}
         />

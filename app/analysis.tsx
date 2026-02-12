@@ -16,6 +16,7 @@ import ZoomControls from '../components/ZoomControls';
 import CardSideToggle from '../components/CardSideToggle';
 import RotationControls from '../components/RotationControls';
 import AdvancedToggle from '../components/AdvancedToggle';
+import ColorPickerMenu from '../components/ColorPickerMenu';
 import { BorderBoundaries, CardDimensions, CenteringMeasurements } from '../types/measurements';
 import { GradingResult } from '../types/grading';
 import { estimateCardDimensions } from '../utils/imageProcessing';
@@ -105,11 +106,16 @@ export default function AnalysisScreen() {
   const [isLinesDragging, setIsLinesDragging] = useState(false);
   const [cardSide, setCardSide] = useState<'front' | 'back'>('front');
   const [recentPhotos, setRecentPhotos] = useState<MediaLibrary.AssetInfo[]>([]);
-  const [advancedControlsEnabled, setAdvancedControlsEnabled] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [rotateZ, setRotateZ] = useState(0);
-  
+  const [lineColor, setLineColor] = useState<string>('#A020F0');
+  const [activeMenu, setActiveMenu] = useState<'none' | 'rotation' | 'colorPicker'>('none');
+
+  // Derived states for backward compatibility with child components
+  const advancedControlsEnabled = activeMenu === 'rotation';
+  const colorPickerVisible = activeMenu === 'colorPicker';
+
   // Settings
   const { settings, updateSettings } = useSettings();
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
@@ -270,7 +276,18 @@ export default function AnalysisScreen() {
   };
 
   const handleToggleAdvanced = () => {
-    setAdvancedControlsEnabled(!advancedControlsEnabled);
+    // Toggle rotation menu: close if open, open if closed (auto-closes other menus)
+    setActiveMenu(activeMenu === 'rotation' ? 'none' : 'rotation');
+  };
+
+  const handleColorPickerToggle = () => {
+    // Toggle color picker menu: close if open, open if closed (auto-closes other menus)
+    setActiveMenu(activeMenu === 'colorPicker' ? 'none' : 'colorPicker');
+  };
+
+  const handleColorSelect = (color: string) => {
+    setLineColor(color);
+    setActiveMenu('none');
   };
 
   const handleRotationChange = (axis: 'X' | 'Y' | 'Z', value: number) => {
@@ -312,6 +329,14 @@ export default function AnalysisScreen() {
           rotateZ={rotateZ}
           onRotationChange={handleRotationChange}
           onResetAxis={handleResetAxis}
+        />
+      )}
+
+      {/* Color Picker Menu - Only show when color picker is visible */}
+      {!showEmptyState && colorPickerVisible && (
+        <ColorPickerMenu
+          selectedColor={lineColor}
+          onColorSelect={handleColorSelect}
         />
       )}
 
@@ -453,6 +478,7 @@ export default function AnalysisScreen() {
                 onBoundariesChange={handleBoundariesChange}
                 onDraggingChange={setIsLinesDragging}
                 scale={zoomLevel}
+                lineColor={lineColor}
               />
             </ZoomableImage>
           </View>
@@ -479,6 +505,9 @@ export default function AnalysisScreen() {
               translateX={translateX}
               translateY={translateY}
               onReset={handleZoomReset}
+              lineColor={lineColor}
+              onColorPickerToggle={handleColorPickerToggle}
+              colorPickerVisible={colorPickerVisible}
             />
 
             {/* Advanced Toggle - Always visible on right side */}
